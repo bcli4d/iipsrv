@@ -310,7 +310,7 @@ RawTilePtr TPTImage::getTile( int seq, int ang, unsigned int res, int layers, un
   }
 
 
-  RawTilePtr rawtile(new RawTile( tile, res, seq, ang, tw, th, channels, bpp ));
+  RawTilePtr rawtile(new RawTile( tile, res, seq, ang, tw, th, channels, bpc ));
   rawtile->data = tile_buf;
   rawtile->dataLength = length;
   rawtile->filename = getImagePath();

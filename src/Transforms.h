@@ -23,7 +23,7 @@
 #define _TRANSFORMS_H
 
 #include <vector>
-#include "RawTilePtr.h"
+#include "RawTile.h"
 
 /// Function to create normalized array
 /** @param in tile data to be adjusted

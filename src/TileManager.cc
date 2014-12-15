@@ -201,7 +201,7 @@ RawTilePtr TileManager::getTileInternal( int resolution, int tile, int xangle, i
       // Crop if this is an edge tile
       if( ( (ttt->width != image->getTileWidth()) || (ttt->height != image->getTileHeight()) ) && ttt->padded ){
 	if( loglevel >= 5 ) * logfile << "TileManager :: Cropping tile" << endl;
-	this->crop( &ttt );
+	this->crop( ttt );
       }
 
       if( loglevel >=2 ) compression_timer.start();
@@ -308,19 +308,19 @@ RawTilePtr TileManager::getRegion( unsigned int res, int seq, int ang, int layer
 
 
   unsigned int channels = image->getNumChannels();
-  unsigned int bpc = image->getNumBitsPerChannel();
+  unsigned int bpc = image->getNumBitsPerPixel();
   SampleType sampleType = image->getSampleType();
 
   // Create an empty tile with the correct dimensions
-  RawTilePtr region(new RawTile( 0, res, seq, ang, width, height, channels, bpp ));
-  region->dataLength = width * height * channels * bpp/8;
+  RawTilePtr region(new RawTile( 0, res, seq, ang, width, height, channels, bpc ));
+  region->dataLength = width * height * channels * bpc/8;
   region->sampleType = sampleType;
 
   // Allocate memory for the region
-  if( bpc == 8 ) region.data = new unsigned char[width*height*channels];
-  else if( bpc == 16 ) region.data = new unsigned short[width*height*channels];
-  else if( bpc == 32 && sampleType == FIXEDPOINT ) region.data = new int[width*height*channels];
-  else if( bpc == 32 && sampleType == FLOATINGPOINT ) region.data = new float[width*height*channels];
+  if( bpc == 8 ) region->data = new unsigned char[width*height*channels];
+  else if( bpc == 16 ) region->data = new unsigned short[width*height*channels];
+  else if( bpc == 32 && sampleType == FIXEDPOINT ) region->data = new int[width*height*channels];
+  else if( bpc == 32 && sampleType == FLOATINGPOINT ) region->data = new float[width*height*channels];
 
   unsigned int current_height = 0;
 
@@ -414,22 +414,22 @@ RawTilePtr TileManager::getRegion( unsigned int res, int seq, int ang, int layer
 	// Simply copy the line of data across
 	if( bpc == 8 ){
 	  unsigned char* ptr = (unsigned char*) rawtile->data;
-	  unsigned char* buf = (unsigned char*) region.data;
+	  unsigned char* buf = (unsigned char*) region->data;
 	  memcpy( &buf[buffer_index], &ptr[inx], dst_tile_width*channels );
 	}
 	else if( bpc ==  16 ){
 	  unsigned short* ptr = (unsigned short*) rawtile->data;
-	  unsigned short* buf = (unsigned short*) region.data;
+	  unsigned short* buf = (unsigned short*) region->data;
 	  memcpy( &buf[buffer_index], &ptr[inx], dst_tile_width*channels*2 );
 	}
 	else if( bpc == 32 && sampleType == FIXEDPOINT ){
 	  unsigned int* ptr = (unsigned int*) rawtile->data;
-	  unsigned int* buf = (unsigned int*) region.data;
+	  unsigned int* buf = (unsigned int*) region->data;
 	  memcpy( &buf[buffer_index], &ptr[inx], dst_tile_width*channels*4 );
 	}
 	else if( bpc == 32 && sampleType == FLOATINGPOINT ){
 	  float* ptr = (float*) rawtile->data;
-	  float* buf = (float*) region.data;
+	  float* buf = (float*) region->data;
 	  memcpy( &buf[buffer_index], &ptr[inx], dst_tile_width*channels*4 );
 	}
       }

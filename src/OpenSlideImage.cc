@@ -58,7 +58,7 @@ void OpenSlideImage::openImage() throw (std::string) {
   logfile << "OpenSlide :: openImage() :: " << timer.getTime() << " microseconds" << endl << flush;
 #endif
 
-  if (bpp == 0) {
+  if (bpc == 0) {
     loadImageInfo(currentX, currentY);
   }
 
@@ -147,7 +147,7 @@ void OpenSlideImage::loadImageInfo(int x, int y) throw (std::string) {
 
   // TODO Openslide outputs 8 bit ABGR always.
   channels = 3;
-  bpp = 8;
+  bpc = 8;
   colourspace = sRGB;
 
   // const char* comment = openslide_get_comment(osr);
@@ -657,7 +657,7 @@ RawTilePtr OpenSlideImage::getNativeTile(const size_t tilex, const size_t tiley,
 
 
   // create the RawTile object
-  RawTilePtr rt(new RawTile(tiley * ntlx + tilex, iipres, 0, 0, tw, th, channels, bpp));
+  RawTilePtr rt(new RawTile(tiley * ntlx + tilex, iipres, 0, 0, tw, th, channels, bpc));
 
   // compute the size, etc
   rt->dataLength = tw * th * channels * sizeof(unsigned char);
@@ -787,7 +787,7 @@ RawTilePtr OpenSlideImage::halfsampleAndComposeTile(const size_t tilex, const si
 
 
   // allocate raw tile.
-  RawTilePtr rt(new RawTile(tiley * ntlx + tilex, iipres, 0, 0, tw, th, channels, bpp));
+  RawTilePtr rt(new RawTile(tiley * ntlx + tilex, iipres, 0, 0, tw, th, channels, bpc));
 
   // compute the size, etc
   rt->dataLength = tw * th * channels * sizeof(unsigned char);

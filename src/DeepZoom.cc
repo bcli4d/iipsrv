@@ -97,7 +97,7 @@ void DeepZoom::run( Session* session, const std::string& argument ){
   unsigned int resOffset = (unsigned int) ceil( log2(maxdim) );  // no +1 because we keep the lowest res.
 
   if( session->loglevel >= 4 ){
-    *(session->logfile) << "DeepZoom :: virtually existing lower resolutions : " << numDiscardRes << " below real: " << numResolutions << endl;
+    *(session->logfile) << "DeepZoom :: virtually existing lower resolutions : " << resOffset << " below real: " << numResolutions << endl;
   }
 
 

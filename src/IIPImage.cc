@@ -1,4 +1,4 @@
-P// IIPImage.cc 
+// IIPImage.cc 
 
 
 /*  IIP fcgi server module

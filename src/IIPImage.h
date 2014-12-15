@@ -47,7 +47,7 @@ class file_error : public std::runtime_error {
 
 
 // Supported image formats
-enum ImageFormat { TIF, JPEG2000, UNSUPPORTED };
+enum ImageFormat { TIF, JPEG2000, OPENSLIDE, UNSUPPORTED };
 
 
 
@@ -236,7 +236,7 @@ class IIPImage {
   ImageFormat getImageFormat() { return format; };
 
   /// get the image timestamp from file system
-  static time_t getFileTimestamp(const std::string& s) throw(std::string);
+  static time_t getFileTimestamp(const std::string& s) throw( file_error );
 
   time_t getRawTimestamp() { return timestamp; };
 

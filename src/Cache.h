@@ -35,7 +35,7 @@
 #define snprintf _snprintf
 #endif
 
-
+#include <cmath>
 
 // Test for available map types. Try to use an efficient hashed map type if possible
 // and define this as HASHMAP, which we can then use elsewhere.
