@@ -187,7 +187,7 @@ class KakaduImage : public IIPImage {
       @param l number of quality layers to decode
       @param t tile number
    */
-  RawTile getTile( int x, int y, unsigned int r, int l, unsigned int t ) throw (file_error);
+  virtual RawTilePtr getTile( int x, int y, unsigned int r, int l, unsigned int t ) throw (file_error);
 
   /// Overloaded function for returning a region for a given angle and resolution
   /** Return a RawTile object: Overloaded by child class.
@@ -201,7 +201,7 @@ class KakaduImage : public IIPImage {
       @param h height of region
       @param b buffer to fill
    */
-  RawTile getRegion( int ha, int va, unsigned int r, int l, int x, int y, unsigned int w, unsigned int h ) throw (file_error);
+  virtual RawTilePtr getRegion( int ha, int va, unsigned int r, int l, int x, int y, unsigned int w, unsigned int h ) throw (file_error);
 
 
 };

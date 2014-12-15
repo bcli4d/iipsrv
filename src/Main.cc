@@ -225,8 +225,11 @@ int main( int argc, char *argv[] )
 
 
   // Set our maximum image cache size
-  float max_image_cache_size = Environment::getMaxImageCacheSize();
-  imageCacheMapType imageCache;
+	int max_image_cache_size = Environment::getMaxImageCacheSize();
+  float max_tile_cache_size = Environment::getMaxTileCacheSize();
+
+
+	imageCacheMapType imageCache(max_image_cache_size);
 
 
   // Get our image pattern variable
@@ -265,7 +268,8 @@ int main( int argc, char *argv[] )
 
   // Print out some information
   if( loglevel >= 1 ){
-    logfile << "Setting maximum image cache size to " << max_image_cache_size << "MB" << endl;
+		logfile << "Setting maximum image cache size to " << max_image_cache_size << endl;
+    logfile << "Setting maximum tile cache size to " << max_tile_cache_size << "MB" << endl;
     logfile << "Setting filesystem prefix to '" << filesystem_prefix << "'" << endl;
     logfile << "Setting default JPEG quality to " << jpeg_quality << endl;
     logfile << "Setting maximum CVT size to " << max_CVT << endl;
@@ -331,7 +335,7 @@ int main( int argc, char *argv[] )
 
   map <string, string> moduleList;
   string modulePath;
-  envpara = getenv( "DECODER_MODULES" );
+  char* envpara = getenv( "DECODER_MODULES" );
 
   if( envpara ){
 
@@ -397,7 +401,7 @@ int main( int argc, char *argv[] )
   srand( request_timer.getTime() );
 
   // Create our tile cache
-  Cache tileCache( max_image_cache_size );
+	TileCache tileCache( max_tile_cache_size );
   Task* task = NULL;
 
 
@@ -429,7 +433,8 @@ int main( int argc, char *argv[] )
 
     // Declare our image pointer here outside of the try scope
     //  so that we can close the image on exceptions
-    IIPImage *image = NULL;
+      Session session;  // putting session object out here does the same thing.
+//			IIPImagePtr image;
     JPEGCompressor jpeg( jpeg_quality );
 
 
@@ -466,8 +471,7 @@ int main( int argc, char *argv[] )
       
 
       // Set up our session data object
-      Session session;
-      session.image = &image;
+				//session.image = image;
       session.response = &response;
       session.view = &view;
       session.jpeg = &jpeg;
@@ -708,8 +712,8 @@ int main( int argc, char *argv[] )
       delete task;
       task = NULL;
     }
-    delete image;
-    image = NULL;
+			//delete image;  // TODO: don't delete this.  delete via imageCache cleanup.
+			//image = NULL;
     IIPcount ++;
 
 #ifdef DEBUG
@@ -725,7 +729,7 @@ int main( int argc, char *argv[] )
 
 
     if( loglevel >= 2 ){
-      logfile << "image closed and deleted" << endl
+				logfile << "image cache size is " << imageCache.getNumElements() << endl
 	      << "Server count is " << IIPcount << endl << endl;
       
     }
@@ -736,6 +740,8 @@ int main( int argc, char *argv[] )
   }
 
 
+		// cleanup.
+		// ImageCache should clean up automatically.
 
   if( loglevel >= 1 ){
     logfile << endl << "Terminating after " << IIPcount << " iterations" << endl;

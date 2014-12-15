@@ -70,7 +70,7 @@ Task* Task::factory( const string& t ){
 
 
 void Task::checkImage(){
-  if( !*(session->image) ){
+  if( !(session->image) ){
     session->response->setError( "1 3", argument );
     throw string( "image not set" );
   }
@@ -130,15 +130,15 @@ void MINMAX::run( Session* session, const std::string& argument ){
 
   delimitter = arg2.find( "," );
   tmp = arg2.substr( 0, delimitter );
-  (*(session->image))->min[nchan] = atof( tmp.c_str() );
+  ((session->image))->min[nchan] = atof( tmp.c_str() );
   string arg3 = arg2.substr( delimitter + 1, arg2.length() );
 
   delimitter = arg3.find( "," );
   tmp = arg3.substr( 0, delimitter );
-  (*(session->image))->max[nchan] = atof( tmp.c_str() );
+  ((session->image))->max[nchan] = atof( tmp.c_str() );
 
-  if( session->loglevel >= 2 ) *(session->logfile) << "MINMAX :: set to " << (*(session->image))->min[nchan] << ", "
-						   << (*(session->image))->max[nchan] << " for channel " << nchan << endl;
+  if( session->loglevel >= 2 ) *(session->logfile) << "MINMAX :: set to " << ((session->image))->min[nchan] << ", "
+						   << ((session->image))->max[nchan] << " for channel " << nchan << endl;
 }
 
 

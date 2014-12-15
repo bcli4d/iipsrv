@@ -43,13 +43,13 @@ void CVT::send( Session* session ){
 
 
   // Reload info in case we are dealing with a sequence
-  //(*session->image)->loadImageInfo( session->view->xangle, session->view->yangle );
+  //(session->image)->loadImageInfo( session->view->xangle, session->view->yangle );
 
 
   // Calculate the number of tiles at the requested resolution
-  unsigned int im_width = (*session->image)->getImageWidth();
-  unsigned int im_height = (*session->image)->getImageHeight();
-  int num_res = (*session->image)->getNumResolutions();
+  unsigned int im_width = (session->image)->getImageWidth();
+  unsigned int im_height = (session->image)->getImageHeight();
+  int num_res = (session->image)->getNumResolutions();
 
   // Setup our view with some basic info
   session->view->setImageSize( im_width, im_height );
@@ -57,8 +57,8 @@ void CVT::send( Session* session ){
 
   // Get the resolution, width and height for this view
   int requested_res = session->view->getResolution();
-  im_width = (*session->image)->image_widths[num_res-requested_res-1];
-  im_height = (*session->image)->image_heights[num_res-requested_res-1];
+  im_width = (session->image)->image_widths[num_res-requested_res-1];
+  im_height = (session->image)->image_heights[num_res-requested_res-1];
 
 
   if( session->loglevel >= 3 ){
@@ -129,7 +129,7 @@ void CVT::send( Session* session ){
 
 
   // Get our image file name and strip of the directory path and any suffix
-  string filename = (*session->image)->getImagePath();
+  string filename = (session->image)->getImagePath();
   int pos = filename.rfind(separator)+1;
   string basename = filename.substr( pos, filename.rfind(".")-pos );
 
@@ -143,15 +143,15 @@ void CVT::send( Session* session ){
 	    "Transfer-Encoding: chunked\r\n"
 #endif
 	    "\r\n",
-	    VERSION, MAX_AGE, (*session->image)->getTimestamp().c_str(), basename.c_str() );
+	    VERSION, MAX_AGE, (session->image)->getTimestamp().c_str(), basename.c_str() );
 
   session->out->printf( (const char*) str );
 #endif
 
 
   // Get our requested region from our TileManager
-  TileManager tilemanager( session->tileCache, *session->image, session->watermark, session->jpeg, session->logfile, session->loglevel );
-  RawTile complete_image = tilemanager.getRegion( requested_res,
+  TileManager tilemanager( session->tileCache, session->image, session->watermark, session->jpeg, session->logfile, session->loglevel );
+  RawTilePtr complete_image = tilemanager.getRegion( requested_res,
 						  session->view->xangle, session->view->yangle,
 						  session->view->getLayers(),
 						  view_left, view_top, view_width, view_height );
@@ -159,7 +159,7 @@ void CVT::send( Session* session ){
 
 
   // Convert CIELAB to sRGB
-  if( (*session->image)->getColourSpace() == CIELAB ){
+  if( (session->image)->getColourSpace() == CIELAB ){
     Timer cielab_timer;
     if( session->loglevel >= 3 ){
       *(session->logfile) << "CVT :: Converting from CIELAB->sRGB" << endl;
@@ -175,11 +175,11 @@ void CVT::send( Session* session ){
 
 
   // Only use our float pipeline if necessary
-  if( complete_image.bpc > 8 || session->view->getContrast() != 1.0 || session->view->getGamma() != 1.0 ||
+  if( complete_image->bpc > 8 || session->view->getContrast() != 1.0 || session->view->getGamma() != 1.0 ||
       session->view->cmapped || session->view->shaded || session->view->inverted || session->view->ctw.size() ){
 
     // Apply normalization and float conversion
-    filter_normalize( complete_image, (*session->image)->max, (*session->image)->min );
+    filter_normalize( complete_image, (session->image)->max, (session->image)->min );
 
 
     // Apply hill shading if requested
@@ -265,13 +265,13 @@ void CVT::send( Session* session ){
 
 
   // Reduce to 1 or 3 bands if we have an alpha channel or a multi-band image
-  if( complete_image.channels == 2 ){
+  if( complete_image->channels == 2 ){
     if( session->loglevel >= 3 ){
       *(session->logfile) << "CVT :: Flattening to 1 channel" << endl;
     }
     filter_flatten( complete_image, 1 );
   }
-  else if( complete_image.channels > 3 ){
+  else if( complete_image->channels > 3 ){
     if( session->loglevel >= 3 ){
       *(session->logfile) << "CVT :: Flattening to 3 channels" << endl;
     }
@@ -281,7 +281,7 @@ void CVT::send( Session* session ){
 
 
   // Convert to greyscale if requested
-  if( (*session->image)->getColourSpace() == sRGB && session->view->colourspace == GREYSCALE ){
+  if( (session->image)->getColourSpace() == sRGB && session->view->colourspace == GREYSCALE ){
 
     Timer greyscale_timer;
     if( session->loglevel >= 5 ){
@@ -327,8 +327,8 @@ void CVT::send( Session* session ){
     filter_rotate( complete_image, rotation );
 
     // For 90 and 270 rotation swap width and height
-    resampled_width = complete_image.width;
-    resampled_height = complete_image.height;
+    resampled_width = complete_image->width;
+    resampled_height = complete_image->height;
 
     if( session->loglevel >= 5 ){
       *(session->logfile) << "CVT :: Rotating image by " << rotation << " degrees in "
@@ -342,9 +342,9 @@ void CVT::send( Session* session ){
   session->jpeg->InitCompression( complete_image, resampled_height );
 
   // Add XMP metadata if this exists
-  if( (*session->image)->getMetadata("xmp").size() > 0 ){
+  if( (session->image)->getMetadata("xmp").size() > 0 ){
     if( session->loglevel >= 4 ) *(session->logfile) << "CVT :: Adding XMP metadata" << endl;
-    session->jpeg->addMetadata( (*session->image)->getMetadata("xmp") );
+    session->jpeg->addMetadata( (session->image)->getMetadata("xmp") );
   }
 
   len = session->jpeg->getHeaderSize();
@@ -377,14 +377,14 @@ void CVT::send( Session* session ){
   // Allocate enough memory for this plus an extra 16k for instances where compressed
   // data is greater than uncompressed
   unsigned int strip_height = 128;
-  unsigned int channels = complete_image.channels;
+  unsigned int channels = complete_image->channels;
   unsigned char* output = new unsigned char[resampled_width*channels*strip_height+16536];
   int strips = (resampled_height/strip_height) + (resampled_height%strip_height == 0 ? 0 : 1);
 
   for( int n=0; n<strips; n++ ){
 
     // Get the starting index for this strip of data
-    unsigned char* input = &((unsigned char*)complete_image.data)[n*strip_height*resampled_width*channels];
+    unsigned char* input = &((unsigned char*)complete_image->data)[n*strip_height*resampled_width*channels];
 
     // The last strip may have a different height
     if( (n==strips-1) && (resampled_height%strip_height!=0) ) strip_height = resampled_height % strip_height;

@@ -23,12 +23,33 @@
 #ifndef _RAWTILE_H
 #define _RAWTILE_H
 
+
+#if __cplusplus >= 201103L
+#define HAS_SHARED_PTR 1
+#endif
+
+
+#if defined(HAS_SHARED_PTR)
+#include <memory>
+#endif
+
+
 #include <cstring>
 #include <string>
 #include <cstdlib>
 #include <ctime>
+#include "Timer.h"
+
+#define DEBUG_RT 1
 
 
+
+#ifdef DEBUG_RT
+#include <iostream>
+#include <fstream>
+
+extern std::ofstream logfile;
+#endif
 
 /// Colour spaces - GREYSCALE, sRGB and CIELAB
 enum ColourSpaces { NONE, GREYSCALE, sRGB, CIELAB };
@@ -170,10 +191,20 @@ class RawTile{
 	break;
     }
 
+#ifdef DEBUG_RT
+    Timer timer;
+    timer.start();
+#endif
+
+
     if( data && (dataLength > 0) && tile.data ){
       memcpy( data, tile.data, dataLength );
       memoryManaged = 1;
     }
+#ifdef DEBUG_RT
+    logfile << "RawTile :: copy ctor :: memcpy :: " << timer.getTime() << " microseconds" << std::endl << std::flush;
+#endif
+
   }
 
 
@@ -209,10 +240,18 @@ class RawTile{
 	break;
     }
 
+#ifdef DEBUG_RT
+    Timer timer;
+    timer.start();
+#endif
+
     if( data && (dataLength > 0) && tile.data ){
       memcpy( data, tile.data, dataLength );
       memoryManaged = 1;
     }
+#ifdef DEBUG_RT
+    logfile << "RawTile :: copy assign :: memcpy :: " << timer.getTime() << " microseconds" << std::endl << std::flush;
+#endif
 
     return *this;
   }
@@ -253,6 +292,13 @@ class RawTile{
 
 
 };
+
+// pointer type definition belongs here.
+#if defined(HAS_SHARED_PTR)
+  typedef std::shared_ptr<RawTile>  RawTilePtr;
+#else
+  typedef RawTile*  RawTilePtr;
+#endif
 
 
 #endif

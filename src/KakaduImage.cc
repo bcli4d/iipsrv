@@ -267,7 +267,7 @@ void KakaduImage::closeImage()
 
 
 // Get an invidual tile
-RawTile KakaduImage::getTile( int seq, int ang, unsigned int res, int layers, unsigned int tile ) throw (file_error)
+RawTilePtr KakaduImage::getTile( int seq, int ang, unsigned int res, int layers, unsigned int tile ) throw (file_error)
 {
 
   // Scale up our output bit depth to the nearest factor of 8
@@ -280,7 +280,7 @@ RawTile KakaduImage::getTile( int seq, int ang, unsigned int res, int layers, un
   timer.start();
 #endif
 
-  if( res > numResolutions ){
+  if( res >= numResolutions ){
     ostringstream tile_no;
     tile_no << "Kakadu :: Asked for non-existant resolution: " << res;
     throw file_error( tile_no.str() );
@@ -328,20 +328,20 @@ RawTile KakaduImage::getTile( int seq, int ang, unsigned int res, int layers, un
 
 
   // Create our Rawtile object and initialize with data
-  RawTile rawtile( tile, res, seq, ang, tw, th, channels, obpc );
+  RawTilePtr rawtile( tile, res, seq, ang, tw, th, channels, obpc );
 
 
   // Create our raw tile buffer and initialize some values
-  if( obpc == 16 ) rawtile.data = new unsigned short[tw*th*channels];
-  else if( obpc == 8 ) rawtile.data = new unsigned char[tw*th*channels];
+  if( obpc == 16 ) rawtile->data = new unsigned short[tw*th*channels];
+  else if( obpc == 8 ) rawtile->data = new unsigned char[tw*th*channels];
   else throw file_error( "Kakadu :: Unsupported number of bits" );
 
-  rawtile.dataLength = tw*th*channels*obpc/8;
-  rawtile.filename = getImagePath();
-  rawtile.timestamp = timestamp;
+  rawtile->dataLength = tw*th*channels*obpc/8;
+  rawtile->filename = getImagePath();
+  rawtile->timestamp = timestamp;
 
   // Process the tile
-  process( res, layers, xoffset, yoffset, tw, th, rawtile.data );
+  process( res, layers, xoffset, yoffset, tw, th, rawtile->data );
 
 
 #ifdef DEBUG
@@ -355,7 +355,7 @@ RawTile KakaduImage::getTile( int seq, int ang, unsigned int res, int layers, un
 
 
 // Get an entire region and not just a tile
-RawTile KakaduImage::getRegion( int seq, int ang, unsigned int res, int layers, int x, int y, unsigned int w, unsigned int h ) throw (file_error)
+RawTilePtr KakaduImage::getRegion( int seq, int ang, unsigned int res, int layers, int x, int y, unsigned int w, unsigned int h ) throw (file_error)
 {
   // Scale up our output bit depth to the nearest factor of 8
   unsigned int obpc = bpc;
@@ -367,17 +367,17 @@ RawTile KakaduImage::getRegion( int seq, int ang, unsigned int res, int layers, 
   timer.start();
 #endif
 
-  RawTile rawtile( 0, res, seq, ang, w, h, channels, obpc );
+  RawTilePtr rawtile( 0, res, seq, ang, w, h, channels, obpc );
 
-  if( obpc == 16 ) rawtile.data = new unsigned short[w*h*channels];
-  else if( obpc == 8 ) rawtile.data = new unsigned char[w*h*channels];
+  if( obpc == 16 ) rawtile->data = new unsigned short[w*h*channels];
+  else if( obpc == 8 ) rawtile->data = new unsigned char[w*h*channels];
   else throw file_error( "Kakadu :: Unsupported number of bits" );
 
-  rawtile.dataLength = w*h*channels*obpc/8;
-  rawtile.filename = getImagePath();
-  rawtile.timestamp = timestamp;
+  rawtile->dataLength = w*h*channels*obpc/8;
+  rawtile->filename = getImagePath();
+  rawtile->timestamp = timestamp;
 
-  process( res, layers, x, y, w, h, rawtile.data );
+  process( res, layers, x, y, w, h, rawtile->data );
 
 #ifdef DEBUG
   logfile << "Kakadu :: getRegion() :: " << timer.getTime() << " microseconds" << endl;

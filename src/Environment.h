@@ -26,7 +26,8 @@
  */ 
 #define VERBOSITY 1
 #define LOGFILE "/tmp/iipsrv.log"
-#define MAX_IMAGE_CACHE_SIZE 10.0
+#define MAX_IMAGE_CACHE_SIZE 100
+#define MAX_TILE_CACHE_SIZE 10
 #define FILENAME_PATTERN "_pyr_"
 #define JPEG_QUALITY 75
 #define MAX_CVT 5000
@@ -70,13 +71,22 @@ class Environment {
   }
 
 
-  static float getMaxImageCacheSize(){
-    float max_image_cache_size = MAX_IMAGE_CACHE_SIZE;
+  static size_t getMaxImageCacheSize(){
+    int max_image_cache_size = MAX_IMAGE_CACHE_SIZE;
     char* envpara = getenv( "MAX_IMAGE_CACHE_SIZE" );
     if( envpara ){
-      max_image_cache_size = atof( envpara );
+      max_image_cache_size = atoi( envpara );
     }
     return max_image_cache_size;
+  }
+
+  static float getMaxTileCacheSize(){
+    float max_tile_cache_size = MAX_TILE_CACHE_SIZE;
+    char* envpara = getenv( "MAX_TILE_CACHE_SIZE" );
+    if( envpara ){
+      max_tile_cache_size = atof( envpara );
+    }
+    return max_tile_cache_size;
   }
 
 

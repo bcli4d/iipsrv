@@ -42,9 +42,9 @@ class TileManager{
 
  private:
 
-  Cache* tileCache;
+  TileCache* tileCache;
   JPEGCompressor* jpeg;
-  IIPImage* image;
+  IIPImagePtr image;
   Watermark* watermark;
   std::ofstream* logfile;
   int loglevel;
@@ -60,16 +60,15 @@ class TileManager{
    *  @param xangle horizontal sequence number
    *  @param yangle vertical sequence number
    *  @param number of quality layers within image to decode
-   *  @param c CompressionType
-   *  @return RawTile
+   *  @return RawTile pointer, points to what's in CACHE.   uncompressed version only.
    */
-  RawTile getNewTile( int resolution, int tile, int xangle, int yangle, int layers, CompressionType c );
+  RawTilePtr getNewTile( int resolution, int tile, int xangle, int yangle, int layers);
 
 
   /// Crop a tile to remove padding
-  /** @param t pointer to tile to crop
+  /** @param t pointer to tile to crop, no copy.
    */
-  void crop( RawTile* t );
+  void crop( RawTilePtr t );
 
 
  public:
@@ -84,7 +83,7 @@ class TileManager{
    * @param s  pointer to output file stream
    * @param l  logging level
    */
-  TileManager( Cache* tc, IIPImage* im, Watermark* w, JPEGCompressor* j, std::ofstream* s, int l ){
+  TileManager( TileCache* tc, IIPImagePtr im, Watermark* w, JPEGCompressor* j, std::ofstream* s, int l ){
     tileCache = tc; 
     image = im;
     watermark = w;
@@ -106,10 +105,25 @@ class TileManager{
    *  @param yangle vertical sequence number
    *  @param layers number of quality layers within image to decode
    *  @param c CompressionType
-   *  @return RawTile
+   *  @return RawTile pointer.  the instance that's in TileCache
    */
-  RawTile getTile( int resolution, int tile, int xangle, int yangle, int layers, CompressionType c );
+  RawTilePtr getTileInternal( int resolution, int tile, int xangle, int yangle, int layers, CompressionType c );
 
+
+  /// Get a tile from the cache
+  /**
+   *  If the JPEG tile already exists in the cache, use that, otherwise check for
+   *  an uncompressed tile. If that does not exist either, extract a tile from the
+   *  image. If this is an edge tile, crop it.
+   *  @param resolution resolution number
+   *  @param tile tile number
+   *  @param xangle horizontal sequence number
+   *  @param yangle vertical sequence number
+   *  @param layers number of quality layers within image to decode
+   *  @param c CompressionType
+   *  @return RawTile pointer.  A COPY of what's in TileCache
+   */
+  RawTilePtr getTile( int resolution, int tile, int xangle, int yangle, int layers, CompressionType c );
 
 
   /// Generate a complete region
@@ -124,9 +138,9 @@ class TileManager{
    *  @param y top offset with respect to full image
    *  @param w width of region requested
    *  @param h height of region requested
-   *  @return RawTile
+   *  @return RawTile pointer.  A COPY of what's in TileCache
    */
-    RawTile getRegion( unsigned int res, int xangle, int yangle, int layers, unsigned int x, unsigned int y, unsigned int w, unsigned int h );
+  RawTilePtr getRegion( unsigned int res, int xangle, int yangle, int layers, unsigned int x, unsigned int y, unsigned int w, unsigned int h );
 
 };
 

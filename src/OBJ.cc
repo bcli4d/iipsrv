@@ -136,8 +136,8 @@ void OBJ::iip_server(){
 
 void OBJ::max_size(){
   checkImage();
-  int x = (*session->image)->getImageWidth();
-  int y = (*session->image)->getImageHeight();
+  int x = (session->image)->getImageWidth();
+  int y = (session->image)->getImageHeight();
 
   // For 90 and 270 rotation swap width and height
   if( (int)((session->view)->getRotation()) % 180 == 90 ){
@@ -156,7 +156,7 @@ void OBJ::max_size(){
 void OBJ::resolution_number(){
 
   checkImage();
-  int no_res = (*session->image)->getNumResolutions();
+  int no_res = (session->image)->getNumResolutions();
   if( session->loglevel >= 2 ){
     *(session->logfile) << "OBJ :: Resolution-number handler returning " << no_res << endl;
   }
@@ -168,8 +168,8 @@ void OBJ::resolution_number(){
 void OBJ::tile_size(){
   checkImage();
 
-  int x = (*session->image)->getTileWidth();
-  int y = (*session->image)->getTileHeight();
+  int x = (session->image)->getTileWidth();
+  int y = (session->image)->getTileHeight();
   if( session->loglevel >= 2 ){
     *(session->logfile) << "OBJ :: Tile-size is " << x << " " << y << endl;
   }
@@ -180,7 +180,7 @@ void OBJ::tile_size(){
 void OBJ::bits_per_channel(){
 
   checkImage();
-  int bpc = (*session->image)->getNumBitsPerPixel();
+  int bpc = (session->image)->getNumBitsPerPixel();
   if( session->loglevel >= 2 ){
     *(session->logfile) << "OBJ :: Bits-per-channel handler returning " << bpc << endl;
   }
@@ -191,7 +191,7 @@ void OBJ::bits_per_channel(){
 
 void OBJ::vertical_views(){
   checkImage();
-  list <int> views = (*session->image)->getVerticalViewsList();
+  list <int> views = (session->image)->getVerticalViewsList();
   list <int> :: const_iterator i;
   string tmp = "Vertical-views:";
   char val[8];
@@ -207,7 +207,7 @@ void OBJ::vertical_views(){
 
 void OBJ::horizontal_views(){
   checkImage();
-  list <int> views = (*session->image)->getHorizontalViewsList();
+  list <int> views = (session->image)->getHorizontalViewsList();
   list <int> :: const_iterator i;
   string tmp = "Horizontal-views:";
   char val[8];
@@ -223,13 +223,13 @@ void OBJ::horizontal_views(){
 void OBJ::min_max_values(){
 
   checkImage();
-  unsigned int n = (*session->image)->getNumChannels();
+  unsigned int n = (session->image)->getNumChannels();
   string tmp = "Min-Max-sample-values:";
   char val[24];
   float minimum, maximum;
   for( unsigned int i=0; i<n ; i++ ){
-    minimum = (*session->image)->getMinValue(i);
-    maximum = (*session->image)->getMaxValue(i);
+    minimum = (session->image)->getMinValue(i);
+    maximum = (session->image)->getMaxValue(i);
     snprintf( val, 24, " %.9g ", minimum );
     tmp += val;
     snprintf( val, 24, " %.9g ", maximum );
@@ -256,17 +256,17 @@ void OBJ::colorspace( std::string arg ){
   const char *planes = "3 0 1 2";
   int calibrated = 0;
   int colourspace;
-  if( (*session->image)->getColourSpace() == CIELAB ){
+  if( (session->image)->getColourSpace() == CIELAB ){
     colourspace = 4;
     calibrated = 1;
   }
-  else if( (*session->image)->getColourSpace() == GREYSCALE ){
+  else if( (session->image)->getColourSpace() == GREYSCALE ){
     colourspace = 1;
     planes = "1 0";
   }
   else colourspace = 3;
 
-  int no_res = (*session->image)->getNumResolutions();
+  int no_res = (session->image)->getNumResolutions();
   char tmp[32];
   snprintf( tmp, 32, "Colorspace,0-%d,0:%d 0 %d %s", no_res-1,
 	    calibrated, colourspace, planes );
@@ -283,7 +283,7 @@ void OBJ::metadata( string field ){
 
   checkImage();
 
-  string metadata = (*session->image)->getMetadata( field );
+  string metadata = (session->image)->getMetadata( field );
   if( session->loglevel >= 3 ){
     *(session->logfile) << "OBJ :: " << field << " handler returning '" << metadata << "'" << endl;
   }

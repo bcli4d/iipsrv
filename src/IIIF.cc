@@ -128,16 +128,16 @@ void IIIF::run( Session* session, const string& src ){
   fif.run( session, filename );
 
   // Reload our filename
-  filename = (*session->image)->getImagePath();
+  filename = (session->image)->getImagePath();
 
   // Get the information about image, that can be shown in info.json
   unsigned int requested_width;
   unsigned int requested_height;
-  unsigned int width = (*session->image)->getImageWidth();
-  unsigned int height = (*session->image)->getImageHeight();
-  unsigned tw = (*session->image)->getTileWidth();
-  unsigned th = (*session->image)->getTileHeight();
-  unsigned numResolutions = (*session->image)->getNumResolutions();
+  unsigned int width = (session->image)->getImageWidth();
+  unsigned int height = (session->image)->getImageHeight();
+  unsigned tw = (session->image)->getTileWidth();
+  unsigned th = (session->image)->getTileHeight();
+  unsigned numResolutions = (session->image)->getNumResolutions();
 
   session->view->setImageSize( width, height );
   session->view->setMaxResolutions( numResolutions );
@@ -205,7 +205,7 @@ void IIIF::run( Session* session, const string& src ){
     header << "Server: iipsrv/" << VERSION << eof
 	   << "Content-Type: application/ld+json" << eof
 	   << "Cache-Control: max-age=" << MAX_AGE << eof
-	   << "Last-Modified: " << (*session->image)->getTimestamp() << eof;
+	   << "Last-Modified: " << (session->image)->getTimestamp() << eof;
     if( !cors.empty() ) header << cors << eof;
     header << eof << infoStringStream.str();
 
@@ -477,10 +477,10 @@ void IIIF::run( Session* session, const string& src ){
   // Write info about request to log
   if( session->loglevel >= 3 ){
     if( suffix == "info.json" ){
-      *(session->logfile) << "IIIF :: " << suffix << " request for " << (*session->image)->getImagePath() << endl;
+      *(session->logfile) << "IIIF :: " << suffix << " request for " << (session->image)->getImagePath() << endl;
     }
     else{
-      *(session->logfile) << "IIIF :: image request for " << (*session->image)->getImagePath()
+      *(session->logfile) << "IIIF :: image request for " << (session->image)->getImagePath()
 			  << " with arguments: region: " << session->view->getViewLeft() << "," << session->view->getViewTop() << ","
 			  << session->view->getViewWidth() << "," << session->view->getViewHeight()
 			  << "; size: " << requested_width << "x" << requested_height
@@ -495,8 +495,8 @@ void IIIF::run( Session* session, const string& src ){
   // Get most suitable resolution and recalculate width and height of region in this resolution
   int requested_res = session->view->getResolution();
 
-  unsigned int im_width = (*session->image)->image_widths[numResolutions-requested_res-1];
-  unsigned int im_height = (*session->image)->image_heights[numResolutions-requested_res-1];
+  unsigned int im_width = (session->image)->image_widths[numResolutions-requested_res-1];
+  unsigned int im_height = (session->image)->image_heights[numResolutions-requested_res-1];
 
   unsigned int view_left, view_top;
 

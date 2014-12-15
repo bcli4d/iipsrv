@@ -68,10 +68,10 @@ void SPECTRA::run( Session* session, const std::string& argument ){
   }
   
 
-  TileManager tilemanager( session->tileCache, *session->image, session->watermark, session->jpeg, session->logfile, session->loglevel );
+  TileManager tilemanager( session->tileCache, session->image, session->watermark, session->jpeg, session->logfile, session->loglevel );
 
   // Use our horizontal views function to get a list of available spectral images
-  list <int> views = (*session->image)->getHorizontalViewsList();
+  list <int> views = (session->image)->getHorizontalViewsList();
   list <int> :: const_iterator i;
 
   // Our list of spectral reflectance values for the requested point
@@ -86,7 +86,7 @@ void SPECTRA::run( Session* session, const std::string& argument ){
 	    "Cache-Control: max-age=%d\r\n"
 	    "Last-Modified: %s\r\n"
 	    "\r\n",
-	    VERSION, MAX_AGE, (*session->image)->getTimestamp().c_str() );
+	    VERSION, MAX_AGE, (session->image)->getTimestamp().c_str() );
 
   session->out->printf( (const char*) str );
   session->out->flush();
@@ -100,39 +100,39 @@ void SPECTRA::run( Session* session, const std::string& argument ){
 
     int n = *i;
 
-    RawTile rawtile = tilemanager.getTile( resolution, tile, n, session->view->yangle, session->view->getLayers(), UNCOMPRESSED );
+    RawTilePtr rawtile = tilemanager.getTile( resolution, tile, n, session->view->yangle, session->view->getLayers(), UNCOMPRESSED );
 
-    unsigned int tw = (*session->image)->getTileWidth();
+    unsigned int tw = (session->image)->getTileWidth();
     unsigned int index = y*tw + x;
 
     void *ptr;
     float reflectance = 0.0;
 
-    if( session->loglevel >= 5 ) (*session->logfile) << "SPECTRA :: " << rawtile.bpc << " bits per channel data" << endl;
+    if( session->loglevel >= 5 ) (*session->logfile) << "SPECTRA :: " << rawtile->bpc << " bits per channel data" << endl;
 
     // Handle depending on bit depth
-    if( rawtile.bpc == 8 ){
-      ptr = (unsigned char*) (rawtile.data);
+    if( rawtile->bpc == 8 ){
+      ptr = (unsigned char*) (rawtile->data);
       reflectance = static_cast<float>((float)((unsigned char*)ptr)[index]) / 255.0;
     }
-    else if( rawtile.bpc == 16 ){
-      ptr = (unsigned short*) (rawtile.data);
+    else if( rawtile->bpc == 16 ){
+      ptr = (unsigned short*) (rawtile->data);
       reflectance = static_cast<float>((float)((unsigned short*)ptr)[index]) / 65535.0;
     }
-    else if( rawtile.bpc == 32 ){
-      if( rawtile.sampleType == FIXEDPOINT ) {
-        ptr = (unsigned int*) rawtile.data;
+    else if( rawtile->bpc == 32 ){
+      if( rawtile->sampleType == FIXEDPOINT ) {
+        ptr = (unsigned int*) rawtile->data;
         reflectance = static_cast<float>((float)((unsigned int*)ptr)[index]);
       }
       else {
-        ptr = (float*) rawtile.data;
+        ptr = (float*) rawtile->data;
         reflectance = static_cast<float>((float)((float*)ptr)[index]);
       }
     }
 
     spectrum.push_front( reflectance );
 
-    string metadata = (*session->image)->getMetadata( "subject" );
+    string metadata = (session->image)->getMetadata( "subject" );
 
     char tmp[1024];
     snprintf( tmp, 1024, "\t<point>\n\t\t<wavelength>%d</wavelength>\n\t\t<reflectance>%f</reflectance>\n\t</point>\n", n, reflectance );

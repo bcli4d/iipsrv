@@ -235,10 +235,15 @@ class IIPImage {
   //  const std::string& getImageFormat() { return format; };
   ImageFormat getImageFormat() { return format; };
 
-  /// Get the image timestamp
+  /// get the image timestamp from file system
+  static time_t getFileTimestamp(const std::string& s) throw(std::string);
+
+  time_t getRawTimestamp() { return timestamp; };
+
+  /// Get the image timestamp and update the stored var
   /** @param s file path
    */
-  void updateTimestamp( const std::string& s ) throw( file_error );
+  bool updateTimestamp( const std::string& s ) throw( file_error );
 
   /// Get a HTTP RFC 1123 formatted timestamp
   const std::string getTimestamp();
@@ -332,7 +337,7 @@ class IIPImage {
       @param l quality layers
       @param t tile number
    */
-  virtual RawTile getTile( int h, int v, unsigned int r, int l, unsigned int t ) { return RawTile(); };
+  virtual RawTilePtr getTile( int h, int v, unsigned int r, int l, unsigned int t ) { return RawTilePtr(); };
 
 
   /// Return a region for a given angle and resolution
@@ -341,13 +346,13 @@ class IIPImage {
       @param va vertical angle
       @param r resolution
       @param layers number of layers to decode
-      @param x offset in x direction
-      @param y offset in y direction
-      @param w width of region
-      @param h height of region
+      @param x offset in x direction at resolution r
+      @param y offset in y direction at resolution r
+      @param w width of region    at resolution r
+      @param h height of region   at resolution r
       @param b image buffer
   */
-  virtual RawTile getRegion( int ha, int va, unsigned int r, int layers, int x, int y, unsigned int w, unsigned int h ){ return RawTile(); };
+  virtual RawTilePtr getRegion( int ha, int va, unsigned int r, int layers, int x, int y, unsigned int w, unsigned int h ){ return RawTilePtr(); };
 
   /// Assignment operator
   /** @param im IIPImage object */
@@ -364,5 +369,10 @@ class IIPImage {
 
 };
 
+#if defined(HAS_SHARED_PTR)
+  typedef std::shared_ptr<IIPImage>  IIPImagePtr;
+#else
+  typedef IIPImage*  IIPImagePtr;
+#endif
 
 #endif

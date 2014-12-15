@@ -158,15 +158,15 @@ void iip_term_destination( j_compress_ptr cinfo )
 
 
 
-void JPEGCompressor::InitCompression( const RawTile& rawtile, unsigned int strip_height ) throw (string)
+void JPEGCompressor::InitCompression( const RawTilePtr& rawtile, unsigned int strip_height ) throw (string)
 {
   // Do some initialisation
   dest = &dest_mgr;
 
   // Set up the correct width and height for this particular tile
-  width = rawtile.width;
-  height = rawtile.height;
-  channels = rawtile.channels;
+  width = rawtile->width;
+  height = rawtile->height;
+  channels = rawtile->channels;
 
 
   // Make sure we only try to compress images with 1 or 3 channels
@@ -300,13 +300,11 @@ unsigned int JPEGCompressor::Finish( unsigned char* output ) throw (string)
 }
 
 
-
-
-int JPEGCompressor::Compress( RawTile& rawtile ) throw (string)
+int JPEGCompressor::Compress( RawTilePtr& rawtile ) throw (string)
 {
 
   // Do some initialisation
-  data = (unsigned char*) rawtile.data;
+  data = (unsigned char*) rawtile->data;
   struct jpeg_compress_struct cinfo;
   struct jpeg_error_mgr jerr;
   iip_destination_mgr dest_mgr;
@@ -314,9 +312,9 @@ int JPEGCompressor::Compress( RawTile& rawtile ) throw (string)
 
 
   // Set up the correct width and height for this particular tile
-  width = rawtile.width;
-  height = rawtile.height;
-  channels = rawtile.channels;
+  width = rawtile->width;
+  height = rawtile->height;
+  channels = rawtile->channels;
 
 
   // Make sure we only try to compress images with 1 or 3 channels
@@ -419,21 +417,21 @@ int JPEGCompressor::Compress( RawTile& rawtile ) throw (string)
   // This can happen on small tiles with high quality factors. If so
   // delete and reallocate memory.
   y = dest->size;
-  if( y > rawtile.width*rawtile.height*rawtile.channels ){
-    delete[] (unsigned char*) rawtile.data;
-    rawtile.data = new unsigned char[y];
+  if( y > rawtile->width*rawtile->height*rawtile->channels ){
+    delete[] (unsigned char*) rawtile->data;
+    rawtile->data = new unsigned char[y];
   }
 
   // Copy memory back to the tile
-  memcpy( rawtile.data, dest->source, y );
+  memcpy( rawtile->data, dest->source, y );
   delete[] dest->source;
   jpeg_destroy_compress( &cinfo );
 
 
   // Set the tile compression parameters
-  rawtile.dataLength = y;
-  rawtile.compressionType = JPEG;
-  rawtile.quality = Q;
+  rawtile->dataLength = y;
+  rawtile->compressionType = JPEG;
+  rawtile->quality = Q;
 
 
   // Return the size of the data we have compressed

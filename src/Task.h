@@ -43,18 +43,18 @@
 // Define our http header cache max age (24 hours)
 #define MAX_AGE 86400
 
+typedef ImageCache imageCacheMapType;
 
-
-#ifdef HAVE_EXT_POOL_ALLOCATOR
-#include <ext/pool_allocator.h>
-typedef HASHMAP < std::string, IIPImage,
-			      __gnu_cxx::hash< const std::string >,
-			      std::equal_to< const std::string >,
-			      __gnu_cxx::__pool_alloc< std::pair<const std::string,IIPImage> >
-			      > imageCacheMapType;
-#else
-typedef HASHMAP <std::string,IIPImage> imageCacheMapType;
-#endif
+//#ifdef HAVE_EXT_POOL_ALLOCATOR
+//#include <ext/pool_allocator.h>
+//typedef HASHMAP < const std::string, IIPImage,
+//			      __gnu_cxx::hash< const std::string >,
+//			      std::equal_to< const std::string >,
+//			      __gnu_cxx::__pool_alloc< std::pair<const std::string,IIPImage> >
+//			      > imageCacheMapType;
+//#else
+//typedef HASHMAP <const std::string,IIPImage> imageCacheMapType;
+//#endif
 
 
 
@@ -63,7 +63,8 @@ typedef HASHMAP <std::string,IIPImage> imageCacheMapType;
 
 /// Structure to hold our session data
 struct Session {
-  IIPImage **image;
+  IIPImagePtr image;
+  //IIPImage **image;
   JPEGCompressor* jpeg;
 #ifdef HAVE_PNG
   PNGCompressor* png;
@@ -76,7 +77,7 @@ struct Session {
   std::map <const std::string, std::string> headers;
 
   imageCacheMapType *imageCache;
-  Cache* tileCache;
+  TileCache* tileCache;
 
 #ifdef DEBUG
   FileWriter* out;

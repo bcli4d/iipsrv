@@ -46,11 +46,11 @@ void JTL::send( Session* session, int resolution, int tile ){
 
   }
   else if( (int)((session->view)->getRotation()) % 360 == 180 ){
-    int num_res = (*session->image)->getNumResolutions();
-    unsigned int im_width = (*session->image)->image_widths[num_res-resolution-1];
-    unsigned int im_height = (*session->image)->image_heights[num_res-resolution-1];
-    unsigned int tw = (*session->image)->getTileWidth();
-    //    unsigned int th = (*session->image)->getTileHeight();
+    int num_res = (session->image)->getNumResolutions();
+    unsigned int im_width = (session->image)->image_widths[num_res-resolution-1];
+    unsigned int im_height = (session->image)->image_heights[num_res-resolution-1];
+    unsigned int tw = (session->image)->getTileWidth();
+    //    unsigned int th = (session->image)->getTileHeight();
     int ntiles = (int) ceil( (double)im_width/tw ) * (int) ceil( (double)im_height/tw );
     tile = ntiles - tile - 1;
   }
@@ -63,11 +63,11 @@ void JTL::send( Session* session, int resolution, int tile ){
     throw error.str();
   }
 
-  TileManager tilemanager( session->tileCache, *session->image, session->watermark, session->jpeg, session->logfile, session->loglevel );
+  TileManager tilemanager( session->tileCache, session->image, session->watermark, session->jpeg, session->logfile, session->loglevel );
 
   CompressionType ct;
-  if( (*session->image)->getNumBitsPerPixel() > 8 || (*session->image)->getColourSpace() == CIELAB
-      || (*session->image)->getNumChannels() == 2 || (*session->image)->getNumChannels() > 3
+  if( (session->image)->getNumBitsPerPixel() > 8 || (session->image)->getColourSpace() == CIELAB
+      || (session->image)->getNumChannels() == 2 || (session->image)->getNumChannels() > 3
       || session->view->getContrast() != 1.0 || session->view->getGamma() != 1.0 
       || session->view->getRotation() != 0.0 || session->view->shaded
       || session->view->cmapped || session->view->inverted
@@ -75,22 +75,22 @@ void JTL::send( Session* session, int resolution, int tile ){
   else ct = JPEG;
 
 
-  RawTile rawtile = tilemanager.getTile( resolution, tile, session->view->xangle,
+  RawTilePtr rawtile = tilemanager.getTile( resolution, tile, session->view->xangle,
 					 session->view->yangle, session->view->getLayers(), ct );
 
 
-  int len = rawtile.dataLength;
+  int len = rawtile->dataLength;
 
   if( session->loglevel >= 2 ){
-    *(session->logfile) << "JTL :: Tile size: " << rawtile.width << " x " << rawtile.height << endl
-			<< "JTL :: Channels per sample: " << rawtile.channels << endl
-			<< "JTL :: Bits per channel: " << rawtile.bpc << endl
+    *(session->logfile) << "JTL :: Tile size: " << rawtile->width << " x " << rawtile->height << endl
+			<< "JTL :: Channels per sample: " << rawtile->channels << endl
+			<< "JTL :: Bits per channel: " << rawtile->bpc << endl
 			<< "JTL :: Data size is " << len << " bytes" << endl;
   }
 
 
   // Convert CIELAB to sRGB
-  if( (*session->image)->getColourSpace() == CIELAB ){
+  if( (session->image)->getColourSpace() == CIELAB ){
 
     if( session->loglevel >= 4 ){
       *(session->logfile) << "JTL :: Converting from CIELAB->sRGB";
@@ -104,7 +104,7 @@ void JTL::send( Session* session, int resolution, int tile ){
 
 
   // Only use our float pipeline if necessary
-  if( rawtile.bpc > 8 || session->view->getContrast() != 1.0 || session->view->getGamma() != 1.0 ||
+  if( rawtile->bpc > 8 || session->view->getContrast() != 1.0 || session->view->getGamma() != 1.0 ||
       session->view->cmapped || session->view->shaded || session->view->inverted || session->view->ctw.size() ){
 
     // Apply normalization and float conversion
@@ -112,7 +112,7 @@ void JTL::send( Session* session, int resolution, int tile ){
       *(session->logfile) << "JTL :: Normalizing and converting to float";
       function_timer.start();
     }
-    filter_normalize( rawtile, (*session->image)->max, (*session->image)->min );
+    filter_normalize( rawtile, (session->image)->max, (session->image)->min );
     if( session->loglevel >= 4 ){
       *(session->logfile) << " in " << function_timer.getTime() << " microseconds" << endl;
     }
@@ -199,8 +199,8 @@ void JTL::send( Session* session, int resolution, int tile ){
 
 
   // Reduce to 1 or 3 bands if we have an alpha channel or a multi-band image
-  if( rawtile.channels == 2 || rawtile.channels > 3 ){
-    unsigned int bands = (rawtile.channels==2) ? 1 : 3;
+  if( rawtile->channels == 2 || rawtile->channels > 3 ){
+    unsigned int bands = (rawtile->channels==2) ? 1 : 3;
     if( session->loglevel >= 4 ){
       *(session->logfile) << "JTL :: Flattening channels to " << bands;
       function_timer.start();
@@ -213,7 +213,7 @@ void JTL::send( Session* session, int resolution, int tile ){
 
 
   // Convert to greyscale if requested
-  if( (*session->image)->getColourSpace() == sRGB && session->view->colourspace == GREYSCALE ){
+  if( (session->image)->getColourSpace() == sRGB && session->view->colourspace == GREYSCALE ){
     if( session->loglevel >= 4 ){
       *(session->logfile) << "JTL :: Converting to greyscale";
       function_timer.start();
@@ -258,7 +258,7 @@ void JTL::send( Session* session, int resolution, int tile ){
 
 
   // Compress to JPEG
-  if( rawtile.compressionType == UNCOMPRESSED ){
+  if( rawtile->compressionType == UNCOMPRESSED ){
     if( session->loglevel >= 4 ){
       *(session->logfile) << "JTL :: Compressing UNCOMPRESSED to JPEG";
       function_timer.start();
@@ -280,13 +280,13 @@ void JTL::send( Session* session, int resolution, int tile ){
 	    "Cache-Control: max-age=%d\r\n"
 	    "Last-Modified: %s\r\n"
 	    "\r\n",
-	    VERSION, len, MAX_AGE, (*session->image)->getTimestamp().c_str() );
+	    VERSION, len, MAX_AGE, (session->image)->getTimestamp().c_str() );
 
   session->out->printf( str );
 #endif
 
 
-  if( session->out->putStr( static_cast<const char*>(rawtile.data), len ) != len ){
+  if( session->out->putStr( static_cast<const char*>(rawtile->data), len ) != len ){
     if( session->loglevel >= 1 ){
       *(session->logfile) << "JTL :: Error writing jpeg tile" << endl;
     }

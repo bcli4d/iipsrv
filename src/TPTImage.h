@@ -100,7 +100,7 @@ class TPTImage : public IIPImage {
       @param l quality layers
       @param t tile number
    */
-  RawTile getTile( int x, int y, unsigned int r, int l, unsigned int t ) throw (file_error);
+  virtual RawTilePtr getTile( int x, int y, unsigned int r, int l, unsigned int t ) throw (file_error);
 
 };
 

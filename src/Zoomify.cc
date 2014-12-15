@@ -60,12 +60,12 @@ void Zoomify::run( Session* session, const std::string& argument ){
 
 
   // Get the full image size and the total number of resolutions available
-  unsigned int width = (*session->image)->getImageWidth();
-  unsigned int height = (*session->image)->getImageHeight();
+  unsigned int width = (session->image)->getImageWidth();
+  unsigned int height = (session->image)->getImageHeight();
 
 
-  unsigned int tw = (*session->image)->getTileWidth();
-  unsigned int numResolutions = (*session->image)->getNumResolutions();
+  unsigned int tw = (session->image)->getTileWidth();
+  unsigned int numResolutions = (session->image)->getNumResolutions();
 
 
   // Zoomify does not accept arbitrary numbers of resolutions. The lowest
@@ -75,13 +75,16 @@ void Zoomify::run( Session* session, const std::string& argument ){
 
   unsigned int discard = 0;
 
-  for( n=0; n<numResolutions; n++ ){
-    if( (*session->image)->image_widths[n] < tw && (*session->image)->image_heights[n] < tw ){
+  // compute the number of resolutions where there would be more than 1 tile.
+  for( n=numResolutions - 1; n >= 0; --n ){
+    if( (session->image)->image_widths[n] < tw && (session->image)->image_heights[n] < tw ){
       discard++;
+    } else {
+      break;
     }
   }
 
-
+  // keep the largest that fits inside a single tile.
   if( discard > 0 ) discard -= 1;
 
   if( session->loglevel >= 2 ){
@@ -111,7 +114,7 @@ void Zoomify::run( Session* session, const std::string& argument ){
 	      "Last-Modified: %s\r\n"
 	      "\r\n"
 	      "<IMAGE_PROPERTIES WIDTH=\"%d\" HEIGHT=\"%d\" NUMTILES=\"%d\" NUMIMAGES=\"1\" VERSION=\"1.8\" TILESIZE=\"%d\" />",
-	      VERSION, MAX_AGE,(*session->image)->getTimestamp().c_str(), width, height, ntiles, tw );
+	      VERSION, MAX_AGE,(session->image)->getTimestamp().c_str(), width, height, ntiles, tw );
 
     session->out->printf( (const char*) str );
     session->response->setImageSent();
@@ -138,8 +141,8 @@ void Zoomify::run( Session* session, const std::string& argument ){
 
 
   // Get the width and height for the requested resolution
-  width = (*session->image)->getImageWidth(numResolutions-resolution-1);
-  height = (*session->image)->getImageHeight(numResolutions-resolution-1);
+  width = (session->image)->getImageWidth(numResolutions-resolution-1);
+  height = (session->image)->getImageHeight(numResolutions-resolution-1);
 
 
   // Get the width of the tiles and calculate the number

@@ -185,7 +185,7 @@ void TPTImage::closeImage()
 }
 
 
-RawTile TPTImage::getTile( int seq, int ang, unsigned int res, int layers, unsigned int tile ) throw (file_error)
+RawTilePtr TPTImage::getTile( int seq, int ang, unsigned int res, int layers, unsigned int tile ) throw (file_error)
 {
   uint32 im_width, im_height, tw, th, ntlx, ntly;
   uint32 rem_x, rem_y;
@@ -194,7 +194,7 @@ RawTile TPTImage::getTile( int seq, int ang, unsigned int res, int layers, unsig
 
 
   // Check the resolution exists
-  if( res > numResolutions ){
+  if( res >= numResolutions ){
     ostringstream error;
     error << "TPTImage :: Asked for non-existant resolution: " << res;
     throw file_error( error.str() );
@@ -310,14 +310,14 @@ RawTile TPTImage::getTile( int seq, int ang, unsigned int res, int layers, unsig
   }
 
 
-  RawTile rawtile( tile, res, seq, ang, tw, th, channels, bpc );
-  rawtile.data = tile_buf;
-  rawtile.dataLength = length;
-  rawtile.filename = getImagePath();
-  rawtile.timestamp = timestamp;
-  rawtile.memoryManaged = 0;
-  rawtile.padded = true;
-  rawtile.sampleType = sampleType;
+  RawTilePtr rawtile(new RawTile( tile, res, seq, ang, tw, th, channels, bpp ));
+  rawtile->data = tile_buf;
+  rawtile->dataLength = length;
+  rawtile->filename = getImagePath();
+  rawtile->timestamp = timestamp;
+  rawtile->memoryManaged = 0;
+  rawtile->padded = true;
+  rawtile->sampleType = sampleType;
 
   return( rawtile );
 

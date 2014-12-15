@@ -1,4 +1,4 @@
-// IIPImage.cc 
+P// IIPImage.cc 
 
 
 /*  IIP fcgi server module
@@ -35,7 +35,10 @@
 #include <cstring>
 #include <sys/stat.h>
 #include <sstream>
+#include <iostream>
 #include <algorithm>
+#include <ctime>
+#include <limits>
 
 
 using namespace std;
@@ -86,6 +89,8 @@ void IIPImage::testImageType() throw(file_error)
   if( (stat(path.c_str(),&sb)==0) && S_ISREG(sb.st_mode) ){
 
     isFile = true;
+    int dot = imagePath.find_last_of( "." );
+    suffix = imagePath.substr( dot + 1, imagePath.length() );
     timestamp = sb.st_mtime;
 
     // Determine our file format using magic file signatures
@@ -116,8 +121,17 @@ void IIPImage::testImageType() throw(file_error)
     unsigned char lbigtiff[4] = {0x4D,0x4D,0x00,0x2B}; // Little Endian BigTIFF
     unsigned char bbigtiff[4] = {0x49,0x49,0x2B,0x00}; // Big Endian BigTIFF
 
+
     // Compare our header sequence to our magic byte signatures
-    if( memcmp( header, j2k, 10 ) == 0 ) format = JPEG2000;
+    if (suffix=="vtif" ||
+        suffix=="svs" || 
+        suffix=="ndpi" || 
+        suffix=="mrxs" || 
+        suffix=="vms" || 
+        suffix=="scn" || 
+        suffix=="bif")
+    	format = OPENSLIDE;
+    else if( memcmp( header, j2k, 10 ) == 0 ) format = JPEG2000;
     else if( memcmp( header, stdtiff, 3 ) == 0
 	     || memcmp( header, lsbtiff, 4 ) == 0 || memcmp( header, msbtiff, 4 ) == 0
 	     || memcmp( header, lbigtiff, 4 ) == 0 || memcmp( header, bbigtiff, 4 ) == 0 ){
@@ -154,8 +168,16 @@ void IIPImage::testImageType() throw(file_error)
     int len = tmp.length();
 
     suffix = tmp.substr( dot + 1, len );
-    if( suffix == "jp2" || suffix == "jpx" || suffix == "j2k" ) format = JPEG2000;
-    else if( suffix == "tif" || suffix == "tiff" ) format = TIF;
+    if (suffix=="vtif" ||
+        suffix=="svs" || 
+        suffix=="ndpi" || 
+        suffix=="mrxs" || 
+        suffix=="vms" || 
+        suffix=="scn" || 
+        suffix=="bif")
+    	format = OPENSLIDE;
+    else if( suffix == "jp2" || suffix == "jpx" || suffix == "j2k" ) format = JPEG2000;
+    else if( suffix == "ptif" || suffix == "tif" || suffix == "tiff" ) format = TIF;
     else format = UNSUPPORTED;
 
     updateTimestamp( tmp );
@@ -169,9 +191,7 @@ void IIPImage::testImageType() throw(file_error)
 
 }
 
-
-
-void IIPImage::updateTimestamp( const string& path ) throw(file_error)
+time_t IIPImage::getFileTimestamp(const string& path) throw(file_error)
 {
   // Get a modification time for our image
   struct stat sb;
@@ -180,7 +200,18 @@ void IIPImage::updateTimestamp( const string& path ) throw(file_error)
     string message = string( "Unable to open file " ) + path;
     throw file_error( message );
   }
-  timestamp = sb.st_mtime;
+  return sb.st_mtime;
+}
+
+
+bool IIPImage::updateTimestamp( const string& path ) throw(file_error)
+{
+  
+  time_t newtime = IIPImage::getFileTimestamp(path);
+  double modified = difftime(newtime, timestamp);
+  timestamp = newtime;
+  if (modified > std::numeric_limits<double>::round_error()) return true;
+  else return false;
 }
 
 
