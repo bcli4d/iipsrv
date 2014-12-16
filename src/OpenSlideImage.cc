@@ -921,7 +921,7 @@ void OpenSlideImage::halfsample_3(const uint8_t* in, const size_t in_w, const si
                                   uint8_t* out, size_t& out_w, size_t& out_h) {
 
 #ifdef DEBUG_OSI
-  logfile << "OpenSlide :: halfsample_3() :: start " << endl << flush;
+  logfile << "OpenSlide :: halfsample_3() :: start :: in " << (void*)in << " out " << (void*)out << endl << flush;
 #endif
 
   // do one 1/2 sample run
@@ -929,7 +929,7 @@ void OpenSlideImage::halfsample_3(const uint8_t* in, const size_t in_w, const si
   out_h = in_h >> 1;
 
   uint8_t const *row1 = in,
-      *row2 = in + in_w * channels;
+      *row2 = in + in_w * channels * bpc;
   uint8_t	*dest = out;  // if last recursion, put in out, else do it in place
 
 
@@ -941,26 +941,34 @@ void OpenSlideImage::halfsample_3(const uint8_t* in, const size_t in_w, const si
 
     for (size_t i = 0; i < max_w; ++i) {
       *(reinterpret_cast<uint32_t*>(dest)) = halfsample_kernel_3(row1, row2);
-      dest += channels;
-      row1 += 2 * channels;
-      row2 += 2 * channels;
+      dest += channels * bpc;
+      row1 += 2 * channels * bpc;
+      row2 += 2 * channels * bpc;
     }
     row1 = row2;
-    row2 += in_w * channels;
+    row2 += in_w * channels * bpc;
   }
+
+#ifdef DEBUG_OSI
+  logfile << "OpenSlide :: halfsample_3() :: top " << endl << flush;
+#endif
 
   // for last row, skip the last element
   --max_w;
   for (size_t i = 0; i < max_w; ++i) {
     *(reinterpret_cast<uint32_t*>(dest)) = halfsample_kernel_3(row1, row2);
-    dest += channels;
-    row1 += 2 * channels;
-    row2 += 2 * channels;
+    dest += channels * bpc;
+    row1 += 2 * channels * bpc;
+    row2 += 2 * channels * bpc;
   }
+#ifdef DEBUG_OSI
+  logfile << "OpenSlide :: halfsample_3() :: last row " << endl << flush;
+#endif
 
   // for last pixel, use memcpy to avoid writing out of bounds.
   uint32_t v = halfsample_kernel_3(row1, row2);
   memcpy(dest, reinterpret_cast<uint8_t*>(&v), channels);
+
 
 
   // at this point, in has been averaged and stored .
