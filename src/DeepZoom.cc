@@ -97,7 +97,7 @@ void DeepZoom::run( Session* session, const std::string& argument ){
   unsigned int resOffset = (unsigned int) ceil( log2(maxdim) );  // no +1 because we keep the lowest res.
 
   if( session->loglevel >= 4 ){
-    *(session->logfile) << "DeepZoom :: virtually existing lower resolutions : " << resOffset << " below real: " << numResolutions << endl;
+    *(session->logfile) << "DeepZoom :: virtually existing " << resOffset << " lower resolutions below real: " << numResolutions << endl;
   }
 
 
@@ -110,7 +110,7 @@ void DeepZoom::run( Session* session, const std::string& argument ){
       *(session->logfile) << "DeepZoom :: DZI header request" << endl;
 
     if( session->loglevel >= 4 ){
-      *(session->logfile) << "DeepZoom :: Total resolutions: " << numResolutions << ", image width: " << (session->image)->getImageWidth()
+      *(session->logfile) << "DeepZoom :: Total resolutions: " << numResolutions << ", virtual resolutions: " << resOffset << " image width: " << (session->image)->getImageWidth()
 			  << ", image height: " << (session->image)->getImageHeight() << endl;
     }
 
@@ -159,9 +159,9 @@ void DeepZoom::run( Session* session, const std::string& argument ){
   // resolution has [0, dzi_res), and (dzi_res-numResolutions) is the offset, then -1 is incorrect.
   // Take into account the extra zoom levels required by the DeepZoom spec
 //  resolution = resolution - (dzi_res-numResolutions) - 1;
-//  if( resolution < 0 ) resolution = 0;
-//  if( (unsigned int)resolution >= numResolutions ) resolution = numResolutions-1;
   resolution -= resOffset;
+  if( resolution < 0 ) resolution = 0;
+  if( (unsigned int)resolution >= numResolutions ) resolution = numResolutions-1;
 
   if( session->loglevel >= 2 ){
     *(session->logfile) << "DeepZoom :: Tile request for resolution: "
