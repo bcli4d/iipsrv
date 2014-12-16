@@ -807,7 +807,7 @@ RawTilePtr OpenSlideImage::halfsampleAndComposeTile(const size_t tilex, const si
   uint32_t tt_iipres = iipres + 1;
   RawTilePtr tt;
   // temp storage.
-  uint8_t *tt_data = new uint8_t[(tile_width / 2) * (tile_height / 2) * channels];
+  uint8_t *tt_data = new uint8_t[(tile_width >> 1) * (tile_height >> 1) * channels];
   size_t tt_out_w, tt_out_h;
 
   // uses 4 tiles to create new.
@@ -872,7 +872,7 @@ RawTilePtr OpenSlideImage::halfsampleAndComposeTile(const size_t tilex, const si
 
 
 
-
+// h is number of rows to process.  w is number of columns to process.
 void OpenSlideImage::bgra2rgb(uint8_t* data, const size_t w, const size_t h) {
   // swap bytes in place.  we can because we are going from 4 bytes to 3, and because we are using a register to bswap
   //    0000111122223333
@@ -944,8 +944,7 @@ void OpenSlideImage::halfsample_3(const uint8_t* in, const size_t in_w, const si
 	  return;
   }
 
-  uint8_t const *row1 = in,
-      *row2 = in + in_w * channels;
+  uint8_t const *row1, *row2;
   uint8_t	*dest = out;  // if last recursion, put in out, else do it in place
 
 #ifdef DEBUG_OSI
@@ -957,15 +956,17 @@ void OpenSlideImage::halfsample_3(const uint8_t* in, const size_t in_w, const si
       max_w = out_w;
   // skip last row, as the very last dest element may have overflow.
   for (size_t j = 0; j < max_h; ++j) {
+	    // move row pointers forward 2 rows at a time - in_w may not be multiple of 2.
+	  row1 = j * 2 * in_w * channels;
+	  row2 = row1 + in_w * channels;
 
     for (size_t i = 0; i < max_w; ++i) {
       *(reinterpret_cast<uint32_t*>(dest)) = halfsample_kernel_3(row1, row2);
+      // output is contiguous.
       dest += channels ;
       row1 += 2 * channels;
       row2 += 2 * channels ;
     }
-    row1 = row2;
-    row2 += in_w * channels ;
   }
 
 #ifdef DEBUG_OSI
@@ -973,6 +974,9 @@ void OpenSlideImage::halfsample_3(const uint8_t* in, const size_t in_w, const si
 #endif
 
   // for last row, skip the last element
+  row1 = max_h * 2 * in_w * channels;
+  row2 = row1 + in_w * channels;
+
   --max_w;
   for (size_t i = 0; i < max_w; ++i) {
     *(reinterpret_cast<uint32_t*>(dest)) = halfsample_kernel_3(row1, row2);
@@ -999,7 +1003,7 @@ void OpenSlideImage::halfsample_3(const uint8_t* in, const size_t in_w, const si
 
 }
 
-
+// in is contiguous, out will be when done.
 void OpenSlideImage::compose(const uint8_t *in, const size_t in_w, const size_t in_h,
                              const size_t& xoffset, const size_t& yoffset,
                              uint8_t* out, const size_t& out_w, const size_t& out_h) {
