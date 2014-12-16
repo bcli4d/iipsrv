@@ -843,7 +843,7 @@ RawTilePtr OpenSlideImage::halfsampleAndComposeTile(const size_t tilex, const si
   }
   delete [] tt_data;
 #ifdef DEBUG_OSI
-  logfile << "OpenSlide :: halfsampleAndComposeTile() :: downsample :: " << timer.getTime() << " microseconds" << endl << flush;
+  logfile << "OpenSlide :: halfsampleAndComposeTile() :: downsample " << osi_level << " from " << (osi_level -1) << " :: " << timer.getTime() << " microseconds" << endl << flush;
 #endif
 
 
@@ -855,7 +855,7 @@ RawTilePtr OpenSlideImage::halfsampleAndComposeTile(const size_t tilex, const si
   tileCache.insert(rt);   // copy is made?
 
 #ifdef DEBUG_OSI
-  logfile << "OpenSlide :: halfsampleAndComposeTile() :: cache insert :: " << timer.getTime() << " microseconds" << endl << flush;
+  logfile << "OpenSlide :: halfsampleAndComposeTile() :: cache insert " << tilex << "x" << tiley  << " :: " << timer.getTime() << " microseconds" << endl << flush;
 #endif
 
   // and return it.
