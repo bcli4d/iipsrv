@@ -957,7 +957,7 @@ void OpenSlideImage::halfsample_3(const uint8_t* in, const size_t in_w, const si
   // skip last row, as the very last dest element may have overflow.
   for (size_t j = 0; j < max_h; ++j) {
 	    // move row pointers forward 2 rows at a time - in_w may not be multiple of 2.
-	  row1 = j * 2 * in_w * channels;
+	  row1 = in + j * 2 * in_w * channels;
 	  row2 = row1 + in_w * channels;
 
     for (size_t i = 0; i < max_w; ++i) {
@@ -974,7 +974,7 @@ void OpenSlideImage::halfsample_3(const uint8_t* in, const size_t in_w, const si
 #endif
 
   // for last row, skip the last element
-  row1 = max_h * 2 * in_w * channels;
+  row1 = in + max_h * 2 * in_w * channels;
   row2 = row1 + in_w * channels;
 
   --max_w;
