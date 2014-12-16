@@ -790,7 +790,7 @@ RawTilePtr OpenSlideImage::halfsampleAndComposeTile(const size_t tilex, const si
   RawTilePtr rt(new RawTile(tiley * ntlx + tilex, iipres, 0, 0, tw, th, channels, bpc));
 
   // compute the size, etc
-  rt->dataLength = (tw * th * channels * bpc) / 8;
+  rt->dataLength = tw * th * channels;
   rt->filename = getImagePath();
   rt->timestamp = timestamp;
 
@@ -807,7 +807,7 @@ RawTilePtr OpenSlideImage::halfsampleAndComposeTile(const size_t tilex, const si
   uint32_t tt_iipres = iipres + 1;
   RawTilePtr tt;
   // temp storage.
-  uint8_t *tt_data = new uint8_t[(tile_width / 2) * (tile_height / 2) * channels * bpc / 8];
+  uint8_t *tt_data = new uint8_t[(tile_width / 2) * (tile_height / 2) * channels];
   size_t tt_out_w, tt_out_h;
 
   // uses 4 tiles to create new.
@@ -920,8 +920,10 @@ void OpenSlideImage::bgra2rgb(uint8_t* data, const size_t w, const size_t h) {
 void OpenSlideImage::halfsample_3(const uint8_t* in, const size_t in_w, const size_t in_h,
                                   uint8_t* out, size_t& out_w, size_t& out_h) {
 
+
 #ifdef DEBUG_OSI
   logfile << "OpenSlide :: halfsample_3() :: start :: in " << (void*)in << " out " << (void*)out << endl << flush;
+  logfile << "                            :: in wxh " << in_w << "x" << in_h << endl << flush;
 #endif
 
   // do one 1/2 sample run
@@ -929,7 +931,7 @@ void OpenSlideImage::halfsample_3(const uint8_t* in, const size_t in_w, const si
   out_h = in_h >> 1;
 
   uint8_t const *row1 = in,
-      *row2 = in + in_w * channels * bpc;
+      *row2 = in + in_w * channels;
   uint8_t	*dest = out;  // if last recursion, put in out, else do it in place
 
 
@@ -941,12 +943,12 @@ void OpenSlideImage::halfsample_3(const uint8_t* in, const size_t in_w, const si
 
     for (size_t i = 0; i < max_w; ++i) {
       *(reinterpret_cast<uint32_t*>(dest)) = halfsample_kernel_3(row1, row2);
-      dest += channels * bpc;
-      row1 += 2 * channels * bpc;
-      row2 += 2 * channels * bpc;
+      dest += channels ;
+      row1 += 2 * channels;
+      row2 += 2 * channels ;
     }
     row1 = row2;
-    row2 += in_w * channels * bpc;
+    row2 += in_w * channels ;
   }
 
 #ifdef DEBUG_OSI
@@ -957,9 +959,9 @@ void OpenSlideImage::halfsample_3(const uint8_t* in, const size_t in_w, const si
   --max_w;
   for (size_t i = 0; i < max_w; ++i) {
     *(reinterpret_cast<uint32_t*>(dest)) = halfsample_kernel_3(row1, row2);
-    dest += channels * bpc;
-    row1 += 2 * channels * bpc;
-    row2 += 2 * channels * bpc;
+    dest += channels ;
+    row1 += 2 * channels ;
+    row2 += 2 * channels ;
   }
 #ifdef DEBUG_OSI
   logfile << "OpenSlide :: halfsample_3() :: last row " << endl << flush;
