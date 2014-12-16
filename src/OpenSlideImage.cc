@@ -930,13 +930,17 @@ void OpenSlideImage::halfsample_3(const uint8_t* in, const size_t in_w, const si
   out_w = in_w >> 1;
   out_h = in_h >> 1;
 
-  if (out_w == 0 || out_h == 0) {
-	  // nothing to do.
+  if ((out_w == 0) || (out_h == 0)) {
+#ifdef DEBUG_OSI
+  logfile << "OpenSlide :: halfsample_3() :: zero output width or height " << endl << flush;
+#endif
 	  return;
   }
 
   if (!(in)) {
-	  // no data;
+#ifdef DEBUG_OSI
+  logfile << "OpenSlide :: halfsample_3() :: null input " << endl << flush;
+#endif
 	  return;
   }
 
@@ -944,6 +948,9 @@ void OpenSlideImage::halfsample_3(const uint8_t* in, const size_t in_w, const si
       *row2 = in + in_w * channels;
   uint8_t	*dest = out;  // if last recursion, put in out, else do it in place
 
+#ifdef DEBUG_OSI
+  logfile << "OpenSlide :: halfsample_3() :: top " << endl << flush;
+#endif
 
   // walk through all pixels in output, except last.
   size_t max_h = out_h - 1,
@@ -962,7 +969,7 @@ void OpenSlideImage::halfsample_3(const uint8_t* in, const size_t in_w, const si
   }
 
 #ifdef DEBUG_OSI
-  logfile << "OpenSlide :: halfsample_3() :: top " << endl << flush;
+  logfile << "OpenSlide :: halfsample_3() :: last row " << endl << flush;
 #endif
 
   // for last row, skip the last element
@@ -973,8 +980,9 @@ void OpenSlideImage::halfsample_3(const uint8_t* in, const size_t in_w, const si
     row1 += 2 * channels ;
     row2 += 2 * channels ;
   }
+
 #ifdef DEBUG_OSI
-  logfile << "OpenSlide :: halfsample_3() :: last row " << endl << flush;
+  logfile << "OpenSlide :: halfsample_3() :: last one " << endl << flush;
 #endif
 
   // for last pixel, use memcpy to avoid writing out of bounds.
@@ -995,18 +1003,23 @@ void OpenSlideImage::halfsample_3(const uint8_t* in, const size_t in_w, const si
 void OpenSlideImage::compose(const uint8_t *in, const size_t in_w, const size_t in_h,
                              const size_t& xoffset, const size_t& yoffset,
                              uint8_t* out, const size_t& out_w, const size_t& out_h) {
-	  if (in_w == 0 || in_h == 0) {
-		  // nothing to do.
-		  return;
-	  }
-	  if (!(in)) {
-		  // nothing to do
-		  return;
-	  }
+
 #ifdef DEBUG_OSI
   logfile << "OpenSlide :: compose() :: start " << endl << flush;
 #endif
 
+  if ((in_w == 0) || (in_h == 0)) {
+#ifdef DEBUG_OSI
+  logfile << "OpenSlide :: compose() :: zero width or height " << endl << flush;
+#endif
+	  return;
+  }
+  if (!(in)) {
+#ifdef DEBUG_OSI
+  logfile << "OpenSlide :: compose() :: nullptr input " << endl << flush;
+#endif
+	  return;
+  }
 
   if (out_h < yoffset + in_h) {
     logfile << "COMPOSE ERROR: out_h, yoffset, in_h: " << out_h << "," << yoffset << "," << in_h << endl;
