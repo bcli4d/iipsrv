@@ -790,13 +790,13 @@ RawTilePtr OpenSlideImage::halfsampleAndComposeTile(const size_t tilex, const si
   RawTilePtr rt(new RawTile(tiley * ntlx + tilex, iipres, 0, 0, tw, th, channels, bpc));
 
   // compute the size, etc
-  rt->dataLength = tw * th * channels * sizeof(unsigned char);
+  rt->dataLength = (tw * th * channels * bpc) / 8;
   rt->filename = getImagePath();
   rt->timestamp = timestamp;
 
   // new a block that is larger for openslide library to directly copy in.
   // then shuffle from BGRA to RGB.  relying on delete [] to do the right thing.
-  rt->data = new unsigned char[tw * th * channels * sizeof(unsigned char)];
+  rt->data = new unsigned char[rt->dataLength];
   rt->memoryManaged = 1;	// allocated data, so use this flag to indicate that it needs to be cleared on destruction
   //rawtile->padded = false;
 #ifdef DEBUG_OSI
@@ -807,7 +807,7 @@ RawTilePtr OpenSlideImage::halfsampleAndComposeTile(const size_t tilex, const si
   uint32_t tt_iipres = iipres + 1;
   RawTilePtr tt;
   // temp storage.
-  uint8_t *tt_data = new uint8_t[(tile_width / 2) * (tile_width / 2) * channels * sizeof(uint8_t)];
+  uint8_t *tt_data = new uint8_t[(tile_width / 2) * (tile_height / 2) * channels * bpc / 8];
   size_t tt_out_w, tt_out_h;
 
   // uses 4 tiles to create new.
@@ -823,6 +823,9 @@ RawTilePtr OpenSlideImage::halfsampleAndComposeTile(const size_t tilex, const si
       if (ttx >= numTilesX[osi_level - 1]) break;  // at edge, this may not be a 2x2 block.
 
 
+#ifdef DEBUG_OSI
+  logfile << "OpenSlide :: halfsampleAndComposeTile() :: call getCachedTile " << endl << flush;
+#endif
 
 
       // get the tile
@@ -838,6 +841,9 @@ RawTilePtr OpenSlideImage::halfsampleAndComposeTile(const size_t tilex, const si
         compose(tt_data, tt_out_w, tt_out_h, (tile_width / 2) * i, (tile_height / 2) * j,
                 reinterpret_cast<uint8_t*>(rt->data), tw, th);
       }
+#ifdef DEBUG_OSI
+  logfile << "OpenSlide :: halfsampleAndComposeTile() :: called getCachedTile " << endl << flush;
+#endif
     }
 
   }
@@ -914,6 +920,9 @@ void OpenSlideImage::bgra2rgb(uint8_t* data, const size_t w, const size_t h) {
 void OpenSlideImage::halfsample_3(const uint8_t* in, const size_t in_w, const size_t in_h,
                                   uint8_t* out, size_t& out_w, size_t& out_h) {
 
+#ifdef DEBUG_OSI
+  logfile << "OpenSlide :: halfsample_3() :: start " << endl << flush;
+#endif
 
   // do one 1/2 sample run
   out_w = in_w >> 1;
@@ -956,6 +965,9 @@ void OpenSlideImage::halfsample_3(const uint8_t* in, const size_t in_w, const si
 
   // at this point, in has been averaged and stored .
   // since we stride forward 2 col and rows at a time, we don't need to worry about overwriting an unread pixel.
+#ifdef DEBUG_OSI
+  logfile << "OpenSlide :: halfsample_3() :: done" << endl << flush;
+#endif
 
 }
 
@@ -963,6 +975,11 @@ void OpenSlideImage::halfsample_3(const uint8_t* in, const size_t in_w, const si
 void OpenSlideImage::compose(const uint8_t *in, const size_t in_w, const size_t in_h,
                              const size_t& xoffset, const size_t& yoffset,
                              uint8_t* out, const size_t& out_w, const size_t& out_h) {
+
+#ifdef DEBUG_OSI
+  logfile << "OpenSlide :: compose() :: start " << endl << flush;
+#endif
+
 
   if (out_h < yoffset + in_h) {
     logfile << "COMPOSE ERROR: out_h, yoffset, in_h: " << out_h << "," << yoffset << "," << in_h << endl;
@@ -984,6 +1001,11 @@ void OpenSlideImage::compose(const uint8_t *in, const size_t in_w, const size_t 
     dest += dest_stride;
     src += src_stride;
   }
+
+#ifdef DEBUG_OSI
+  logfile << "OpenSlide :: compose() :: start " << endl << flush;
+#endif
+
 }
 
 
