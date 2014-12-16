@@ -930,6 +930,16 @@ void OpenSlideImage::halfsample_3(const uint8_t* in, const size_t in_w, const si
   out_w = in_w >> 1;
   out_h = in_h >> 1;
 
+  if (out_w == 0 || out_h == 0) {
+	  // nothing to do.
+	  return;
+  }
+
+  if (!(in)) {
+	  // no data;
+	  return;
+  }
+
   uint8_t const *row1 = in,
       *row2 = in + in_w * channels;
   uint8_t	*dest = out;  // if last recursion, put in out, else do it in place
@@ -985,7 +995,14 @@ void OpenSlideImage::halfsample_3(const uint8_t* in, const size_t in_w, const si
 void OpenSlideImage::compose(const uint8_t *in, const size_t in_w, const size_t in_h,
                              const size_t& xoffset, const size_t& yoffset,
                              uint8_t* out, const size_t& out_w, const size_t& out_h) {
-
+	  if (in_w == 0 || in_h == 0) {
+		  // nothing to do.
+		  return;
+	  }
+	  if (!(in)) {
+		  // nothing to do
+		  return;
+	  }
 #ifdef DEBUG_OSI
   logfile << "OpenSlide :: compose() :: start " << endl << flush;
 #endif
