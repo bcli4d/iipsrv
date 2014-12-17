@@ -37,8 +37,7 @@ private:
     openslide_t* osr; //the openslide reader
     /// Tile data buffer pointer
 
-    // local raw tile cache
-    TileCache tileCache;
+    TileCache *tileCache;
  
     //uint32_t *osr_buf;
     // tdata_t tile_buf;
@@ -111,20 +110,20 @@ private:
     		const size_t& xoffset, const size_t& yoffset,
     		uint8_t* out, const size_t& out_w, const size_t& out_h);
 
-public:
     /// Constructor
-
-    OpenSlideImage() : IIPImage(), tileCache(OPENSLIDE_TILE_CACHE_SIZE) {
+    OpenSlideImage() : IIPImage() {
         tile_width = OPENSLIDE_TILESIZE;
         tile_height = OPENSLIDE_TILESIZE;
         osr = NULL;
     };
 
-    /// Constructor
+public:
 
+
+    /// Constructor
     /** \param path image path
      */
-    OpenSlideImage(const std::string& path) : IIPImage(path), tileCache(OPENSLIDE_TILE_CACHE_SIZE) {
+    OpenSlideImage(const std::string& path, TileCache* tile_cache) : IIPImage(path), tileCache(tile_cache) {
         tile_width = OPENSLIDE_TILESIZE;
         tile_height = OPENSLIDE_TILESIZE;
         osr = NULL;
@@ -134,15 +133,15 @@ public:
 
     /** \param image IIPImage object
      */
-    OpenSlideImage(const IIPImage& image) : IIPImage(image), tileCache(OPENSLIDE_TILE_CACHE_SIZE) {
+    OpenSlideImage(const IIPImage& image, TileCache* tile_cache) : IIPImage(image), tileCache(tile_cache) {
         osr = NULL;
     };
 
 
     /** \param image IIPImage object
      */
-    OpenSlideImage(const OpenSlideImage& image) : IIPImage(image),
-    		osr(image.osr), tileCache(OPENSLIDE_TILE_CACHE_SIZE),
+    explicit OpenSlideImage(const OpenSlideImage& image) : IIPImage(image),
+    		osr(image.osr), tileCache(image.tileCache),
     		numTilesX(image.numTilesX),
     		numTilesY(image.numTilesY),
     		lastTileXDim(image.lastTileXDim),

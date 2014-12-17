@@ -123,7 +123,7 @@ void FIF::run( Session* session, const string& src ){
 #pragma mark Adding in basic openslide functionality
         else if( format == OPENSLIDE ){
           if( session->loglevel >= 2 ) *(session->logfile) << "FIF :: OpenSlide image detected" << endl;
-          temp = IIPImagePtr(new OpenSlideImage( test ));
+          temp = IIPImagePtr(new OpenSlideImage( test, session->tileCache ));
         }
     #ifdef HAVE_KAKADU
         else if( format == JPEG2000 ){

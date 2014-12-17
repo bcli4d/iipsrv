@@ -577,10 +577,12 @@ RawTilePtr OpenSlideImage::getCachedTile(const size_t tilex, const size_t tiley,
   timer.start();
 #endif
 
+  assert(tileCache);
+
   // check if cache has tile
   uint32_t osi_level = numResolutions - 1 - iipres;
   uint32_t tid = tiley * numTilesX[osi_level] + tilex;
-  RawTilePtr ttt = tileCache.getObject(TileCache::getIndex(getImagePath(), iipres, tid, 0, 0, UNCOMPRESSED, 0));
+  RawTilePtr ttt = tileCache->getObject(TileCache::getIndex(getImagePath(), iipres, tid, 0, 0, UNCOMPRESSED, 0));
 
   // if cache has file, return it
   if (ttt) {
@@ -598,11 +600,27 @@ RawTilePtr OpenSlideImage::getCachedTile(const size_t tilex, const size_t tiley,
   // is this a native layer?
   if (openslide_downsample_in_level[osi_level] == 1) {
     // supported by native openslide layer
+	// tile manager will cache if needed
     return getNativeTile(tilex, tiley, iipres);
+
+
+//#ifdef DEBUG_OSI
+//  timer.start();
+//#endif
+//
+//  // cache it
+//  tileCache->insert(rt);   // copy is made?
+//
+//#ifdef DEBUG_OSI
+//  logfile << "OpenSlide :: getNativeTile() :: cache insert :: " << timer.getTime() << " microseconds" << endl << flush;
+//#endif
+//	return rt;
 
   } else {
     // not supported by native openslide layer, so need to compose from next level up,
     return halfsampleAndComposeTile(tilex, tiley, iipres);
+
+	// tile manager will cache this one.
   }
 
 }
@@ -705,17 +723,6 @@ RawTilePtr OpenSlideImage::getNativeTile(const size_t tilex, const size_t tiley,
   logfile << "OpenSlide :: getNativeTile() :: bgra2rgb() :: " << timer.getTime() << " microseconds" << endl << flush;
 #endif
 
-
-#ifdef DEBUG_OSI
-  timer.start();
-#endif
-
-  // cache it
-  tileCache.insert(rt);   // copy is made?
-
-#ifdef DEBUG_OSI
-  logfile << "OpenSlide :: getNativeTile() :: cache insert :: " << timer.getTime() << " microseconds" << endl << flush;
-#endif
 
   // and return it.
   return rt;
@@ -833,6 +840,20 @@ RawTilePtr OpenSlideImage::halfsampleAndComposeTile(const size_t tilex, const si
 
       if (tt) {
 
+	// cache the next res tile
+
+#ifdef DEBUG_OSI
+  timer.start();
+#endif
+
+  // cache it
+  tileCache->insert(tt);   // copy is made?
+
+#ifdef DEBUG_OSI
+  logfile << "OpenSlide :: halfsampleAndComoseTile() :: cache insert res " << tt_iipres << " " << ttx << "x" << tty << " :: " << timer.getTime() << " microseconds" << endl << flush;
+#endif
+
+
         // downsample into a temp storage.
         halfsample_3(reinterpret_cast<uint8_t*>(tt->data), tt->width, tt->height,
                      tt_data, tt_out_w, tt_out_h);
@@ -852,17 +873,6 @@ RawTilePtr OpenSlideImage::halfsampleAndComposeTile(const size_t tilex, const si
   logfile << "OpenSlide :: halfsampleAndComposeTile() :: downsample " << osi_level << " from " << (osi_level -1) << " :: " << timer.getTime() << " microseconds" << endl << flush;
 #endif
 
-
-#ifdef DEBUG_OSI
-  timer.start();
-#endif
-
-  // cache it
-  tileCache.insert(rt);   // copy is made?
-
-#ifdef DEBUG_OSI
-  logfile << "OpenSlide :: halfsampleAndComposeTile() :: cache insert " << tilex << "x" << tiley  << " :: " << timer.getTime() << " microseconds" << endl << flush;
-#endif
 
   // and return it.
   return rt;
