@@ -111,7 +111,7 @@ class JPEGCompressor{
       @param strip_height pixel height of the strip we want to compress
       @return header size
    */
-  void InitCompression( const RawTilePtr& rawtile, unsigned int strip_height ) throw (std::string);
+  void InitCompression( const RawTilePtr rawtile, unsigned int strip_height ) throw (std::string);
 
   /// Compress a strip of image data
   /** @param s source image data
@@ -129,7 +129,7 @@ class JPEGCompressor{
 
   /// Compress an entire buffer of image data at once in one command
   /** @param t tile of image data */
-  int Compress( RawTilePtr& t ) throw (std::string);
+  int Compress( RawTilePtr t ) throw (std::string);
 
   /// Add metadata to the JPEG header
   /** @param m metadata */

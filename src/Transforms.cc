@@ -55,7 +55,7 @@ using namespace std;
 
 
 // Normalization function
-void filter_normalize( RawTilePtr& in, vector<float>& max, vector<float>& min ) {
+void filter_normalize( RawTilePtr in, vector<float>& max, vector<float>& min ) {
 
   float *normdata;
   unsigned int np = in->dataLength * 8 / in->bpc;
@@ -136,7 +136,7 @@ void filter_normalize( RawTilePtr& in, vector<float>& max, vector<float>& min ) 
 
 
 // Hillshading function
-void filter_shade( RawTilePtr& in, int h_angle, int v_angle ){
+void filter_shade( RawTilePtr in, int h_angle, int v_angle ){
 
   float o_x, o_y, o_z;
 
@@ -292,7 +292,7 @@ static void LAB2sRGB( unsigned char *in, unsigned char *out ){
 
 
 // Convert whole tile from CIELAB to sRGB
-void filter_LAB2sRGB( RawTilePtr& in ){
+void filter_LAB2sRGB( RawTilePtr in ){
 
   unsigned long np = in->width * in->height * in->channels;
 
@@ -312,7 +312,7 @@ void filter_LAB2sRGB( RawTilePtr& in ){
 
 
 // Colormap function
-void filter_cmap( RawTilePtr& in, enum cmap_type cmap ){
+void filter_cmap( RawTilePtr in, enum cmap_type cmap ){
 
   float value;
   unsigned out_chan = 3;
@@ -394,7 +394,7 @@ void filter_cmap( RawTilePtr& in, enum cmap_type cmap ){
 
 
 // Inversion function
-void filter_inv( RawTilePtr& in ){
+void filter_inv( RawTilePtr in ){
   float* infptr;
   unsigned int np = in->dataLength * 8 / in->bpc;
 
@@ -411,7 +411,7 @@ void filter_inv( RawTilePtr& in ){
 
 
 // Resize image using nearest neighbour interpolation
-void filter_interpolate_nearestneighbour( RawTilePtr& in, unsigned int resampled_width, unsigned int resampled_height ){
+void filter_interpolate_nearestneighbour( RawTilePtr in, unsigned int resampled_width, unsigned int resampled_height ){
 
   // Pointer to input buffer
   unsigned char *input = (unsigned char*) in->data;
@@ -465,7 +465,7 @@ void filter_interpolate_nearestneighbour( RawTilePtr& in, unsigned int resampled
 
 // Resize image using bilinear interpolation
 //  - Floating point implementation which benchmarks about 2.5x slower than nearest neighbour
-void filter_interpolate_bilinear( RawTilePtr& in, unsigned int resampled_width, unsigned int resampled_height ){
+void filter_interpolate_bilinear( RawTilePtr in, unsigned int resampled_width, unsigned int resampled_height ){
 
   // Pointer to input buffer
   unsigned char *input = (unsigned char*) in->data;
@@ -533,7 +533,7 @@ void filter_interpolate_bilinear( RawTilePtr& in, unsigned int resampled_width, 
 
 
 // Function to apply a contrast adjustment and clip to 8 bit
-void filter_contrast( RawTilePtr& in, float c ){
+void filter_contrast( RawTilePtr in, float c ){
 
   unsigned int np = in->dataLength * 8 / in->bpc;
 
@@ -557,7 +557,7 @@ void filter_contrast( RawTilePtr& in, float c ){
 
 
 // Gamma correction
-void filter_gamma( RawTilePtr& in, float g ){
+void filter_gamma( RawTilePtr in, float g ){
 
   float* infptr;
   unsigned int np = in->dataLength * 8 / in->bpc;
@@ -577,7 +577,7 @@ void filter_gamma( RawTilePtr& in, float g ){
 
 
 // Rotation function
-void filter_rotate( RawTilePtr& in, float angle=0.0 ){
+void filter_rotate( RawTilePtr in, float angle=0.0 ){
 
   // Currently implemented only for rectangular rotations
   if( (int)angle % 90 == 0 && (int)angle % 360 != 0 ){
@@ -642,7 +642,7 @@ void filter_rotate( RawTilePtr& in, float angle=0.0 ){
 // Convert colour to grayscale using the conversion formula:
 //   Luminance = 0.2126*R + 0.7152*G + 0.0722*B
 // Note that we don't linearize before converting
-void filter_greyscale( RawTilePtr& rawtile ){
+void filter_greyscale( RawTilePtr rawtile ){
 
   if( rawtile->bpc != 8 || rawtile->channels != 3 ) return;
 
@@ -671,7 +671,7 @@ void filter_greyscale( RawTilePtr& rawtile ){
 
 
 // Apply twist or channel recombination to colour or multi-channel image
-void filter_twist( RawTilePtr& rawtile, const vector< vector<float> >& matrix ){
+void filter_twist( RawTilePtr rawtile, const vector< vector<float> >& matrix ){
 
   unsigned long np = rawtile->width * rawtile->height;
   unsigned long n = 0;
@@ -716,7 +716,7 @@ void filter_twist( RawTilePtr& rawtile, const vector< vector<float> >& matrix ){
 
 // Flatten a multi-channel image to a given number of bands by simply stripping
 // away extra bands
-void filter_flatten( RawTilePtr& in, int bands ){
+void filter_flatten( RawTilePtr in, int bands ){
 
   // We cannot increase the number of channels
   if( bands >= in->channels ) return;
@@ -741,7 +741,7 @@ void filter_flatten( RawTilePtr& in, int bands ){
 
 
 // Flip image in horizontal or vertical direction (0=horizontal,1=vertical)
-void filter_flip( RawTilePtr& in, int orientation ){
+void filter_flip( RawTilePtr in, int orientation ){
 
   unsigned char* buffer = new unsigned char[in->width * in->height * in->channels];
   unsigned long n = 0;

@@ -639,7 +639,7 @@ RawTilePtr OpenSlideImage::getNativeTile(const size_t tilex, const size_t tiley,
   timer.start();
 #endif
 
-  if (osr == nullptr) {
+  if (!osr) {
     logfile << "openslide image not yet loaded " << endl;
   }
 

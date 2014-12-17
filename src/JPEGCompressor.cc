@@ -158,7 +158,7 @@ void iip_term_destination( j_compress_ptr cinfo )
 
 
 
-void JPEGCompressor::InitCompression( const RawTilePtr& rawtile, unsigned int strip_height ) throw (string)
+void JPEGCompressor::InitCompression( const RawTilePtr rawtile, unsigned int strip_height ) throw (string)
 {
   // Do some initialisation
   dest = &dest_mgr;
@@ -300,7 +300,7 @@ unsigned int JPEGCompressor::Finish( unsigned char* output ) throw (string)
 }
 
 
-int JPEGCompressor::Compress( RawTilePtr& rawtile ) throw (string)
+int JPEGCompressor::Compress( RawTilePtr rawtile ) throw (string)
 {
 
   // Do some initialisation

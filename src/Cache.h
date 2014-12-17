@@ -190,11 +190,11 @@ class Cache {
      return getRecordSize(miter->first, *(miter->second));
    }
 
-   virtual size_t getRecordSize( const std::string &key, const ValuePtr& val ) = 0;
+   virtual size_t getRecordSize( const std::string &key, const ValuePtr val ) = 0;
 
-   virtual std::string getIndex( const ValuePtr& r ) = 0;
+   virtual std::string getIndex( const ValuePtr r ) = 0;
 
-   virtual time_t getTimestamp ( const ValuePtr& r ) = 0;
+   virtual time_t getTimestamp ( const ValuePtr r ) = 0;
 
    /// Constructor
    /** @param max Maximum cache size in bytes or count */
@@ -226,7 +226,7 @@ class Cache {
 
    /// Insert a tile
    /** @param r Tile to be inserted.  shared pointer copied in.*/
-   void insert( const ValuePtr& rt ) {
+   void insert( const ValuePtr rt ) {
 
      if( maxSize == 0 ) return;
 
@@ -305,7 +305,7 @@ class Cache {
    }
 
 
-   void evict( const ValuePtr& rt ) {
+   void evict( const ValuePtr rt ) {
      std::string key = this->getIndex( rt );
      this->_remove( key );
    }
@@ -319,14 +319,14 @@ class TileCache : public Cache<std::string, RawTile> {
 
   protected:
 
-   using BaseCacheType = Cache<std::string, RawTile>;
+   typedef Cache<std::string, RawTile> BaseCacheType;
 
   /// Main cache storage typedef  Don't need to store key in list again.
-  using ObjectList = BaseCacheType::ObjectList;
+  typedef BaseCacheType::ObjectList ObjectList;
   /// Main cache list iterator typedef
-  using List_Iter = BaseCacheType::List_Iter;
+  typedef BaseCacheType::List_Iter List_Iter;
   /// Index typedef
-  using ObjectMap = BaseCacheType::ObjectMap;
+  typedef BaseCacheType::ObjectMap ObjectMap;
 
 
   /// Basic object storage size
@@ -335,19 +335,19 @@ class TileCache : public Cache<std::string, RawTile> {
   // can store list iterators in map because list iterators are not affected by insert/delete etc to list.
 
   // remember to add objSize.
-  virtual size_t getRecordSize( const std::string &key, const RawTilePtr& val ) {
+  virtual size_t getRecordSize( const std::string &key, const RawTilePtr val ) {
     return ( val->dataLength +
             ( val->filename.capacity() + key.capacity() ) * sizeof(char) +
         this->objSize );
   }
 
 
-  virtual std::string getIndex( const RawTilePtr& r ) {
+  virtual std::string getIndex( const RawTilePtr r ) {
     return TileCache::getIndex( r->filename, r->resolution, r->tileNum,
                      r->hSequence, r->vSequence, r->compressionType, r->quality );
   }
 
-  virtual time_t getTimestamp ( const RawTilePtr& r ) {
+  virtual time_t getTimestamp ( const RawTilePtr r ) {
     return r->timestamp;
   }
 
@@ -400,30 +400,30 @@ class ImageCache : public Cache<std::string, IIPImage> {
 
   protected:
 
-   using BaseCacheType = Cache<std::string, IIPImage>;
+   typedef Cache<std::string, IIPImage> BaseCacheType;
 
 
   /// Main cache storage typedef  Don't need to store key in list again.
-  using ObjectList = BaseCacheType::ObjectList;
+  typedef BaseCacheType::ObjectList ObjectList;
   /// Main cache list iterator typedef
-  using List_Iter = BaseCacheType::List_Iter;
+  typedef BaseCacheType::List_Iter List_Iter;
   /// Index typedef
-  using ObjectMap = BaseCacheType::ObjectMap;
+  typedef BaseCacheType::ObjectMap ObjectMap;
 
 
   // can store list iterators in map because list iterators are not affected by insert/delete etc to list.
 
   // remember to add objSize.
-  virtual size_t getRecordSize( const std::string &key, const IIPImagePtr& val ) {
+  virtual size_t getRecordSize( const std::string &key, const IIPImagePtr val ) {
     return 1;
   }
 
-  virtual std::string getIndex( const IIPImagePtr& r ) {
+  virtual std::string getIndex( const IIPImagePtr r ) {
     return r->getImagePath();
   }
 
 
-  virtual time_t getTimestamp ( const IIPImagePtr& r ) {
+  virtual time_t getTimestamp ( const IIPImagePtr r ) {
     return r->timestamp;
   }
 
