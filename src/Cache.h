@@ -213,8 +213,8 @@ class Cache {
    /// Destructor
    virtual ~Cache() {
 #if !defined(HAS_SHARED_PTR)
-     for (auto el : objList) {
-       delete el;
+     for (List_Iter it = objList.begin(); it != objList.end(); ++it) {
+       delete *it;
      }
 #endif
 
