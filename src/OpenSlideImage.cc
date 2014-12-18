@@ -9,7 +9,7 @@
 #include <cassert>
 
 #include <limits>
-#define DEBUG_OSI
+//#define DEBUG_OSI 1
 using namespace std;
 
 #ifdef DEBUG_OSI
@@ -289,126 +289,6 @@ void OpenSlideImage::closeImage() {
 
 
 
-
-
-
-
-
-
-
-//===========new stuff
-
-
-
-
-///// Overloaded function for getting a particular tile
-///** \param x horizontal sequence angle (for microscopy, ignored.)
-//    \param y vertical sequence angle (for microscopy, ignored.)
-//    \param r resolution - specified as -log_2(mag factor), where mag_factor ~= highest res width / target res width.  0 to numResolutions - 1.
-//    \param l number of quality layers to decode - for jpeg2000
-//    \param t tile number  (within the resolution level.)	specified as a sequential number = y * width + x;
-// */
-//RawTile OpenSlideImage::getTile(int seq, int ang, unsigned int res, int layers, unsigned int tile) throw (string) {
-//
-//#ifdef DEBUG_OSI
-//  Timer timer;
-//  timer.start();
-//#endif
-//
-//  if (res > (numResolutions-1)) {
-//    ostringstream tile_no;
-//    tile_no << "OpenSlide :: Asked for non-existant resolution: " << res;
-//    throw tile_no.str();
-//    return 0;
-//  }
-//
-//  // res is specified in opposite order from image levels: image level 0 has highest res,
-//  // image level nRes-1 has res of 0.
-//  uint32_t openslide_zoom = this->numResolutions - 1 - res;
-//
-//#ifdef DEBUG_OSI
-//  logfile << "OpenSlide :: getTile() :: res=" << res << " tile= " << tile  << " is_zoom= " << openslide_zoom << endl;
-//
-//#endif
-//
-//  //======= get the dimensions in pixels and num tiles for the current resolution
-//
-//  //    int64_t layer_width = image_widths[openslide_zoom];
-//  //    int64_t layer_height = image_heights[openslide_zoom];
-//  //openslide_get_layer_dimensions(osr, layers, &layer_width, &layer_height);
-//
-//  // Get the width and height for last row and column tiles
-//  uint32_t rem_x = this->lastTileXDim[openslide_zoom];
-//  uint32_t rem_y = this->lastTileYDim[openslide_zoom];
-//
-//  // Calculate the number of tiles in each direction
-//  uint32_t ntlx = numTilesX[openslide_zoom];
-//  uint32_t ntly = numTilesY[openslide_zoom];
-//
-//  if (tile >= ntlx * ntly) {
-//    ostringstream tile_no;
-//    tile_no << "OpenSlideImage :: Asked for non-existant tile: " << tile;
-//    throw tile_no.str();
-//  }
-//
-//  // the magnification factor - recall openslide_zoom is essentially log of mag factor.
-//  //int pos_factor = pow(2, openslide_zoom);
-//  //uint64_t pos_factor = 1L << openslide_zoom;   // use it inside "read".  bit shift.
-//
-//  // tile x.
-//  uint32_t tx = tile % ntlx;
-//  uint32_t ty = tile / ntlx;
-//
-//
-//  uint32_t tw = tile_width;
-//  uint32_t th = tile_height;
-//
-//  // Alter the tile size if it's in the rightmost column
-//  if ((tx == ntlx - 1) && (rem_x != 0)) {
-//    tw = rem_x;
-//  }
-//  // Alter the tile size if it's in the bottom row
-//  if ((ty == ntly - 1) && (rem_y != 0)) {
-//    th = rem_y;
-//  }
-//
-//  // Create our raw tile buffer and initialize some values
-//  RawTile rawtile(tile, res, seq, ang, tw, th, channels, bpp);
-//
-//  //rawtile->data = NULL;
-//  rawtile->dataLength = tw * th * channels * sizeof(unsigned char);
-//  rawtile->filename = getImagePath();
-//  rawtile->timestamp = timestamp;
-//
-//  // new a block that is larger for openslide library to directly copy in.
-//  // then shuffle from BGRA to RGB.  relying on delete [] to do the right thing.
-//  rawtile->data = new unsigned char[tw * th * 4 * sizeof(unsigned char)];  // TODO: avoid reallocation?
-//  rawtile->memoryManaged = 1;							   // allocated data, so use this flag to indicate that it needs to be cleared on destruction
-//  //rawtile->padded = false;
-//#ifdef DEBUG_OSI
-//  logfile << "Allocating tw * th * channels * sizeof(char) : " << tw << " * " << th << " * " << channels << " * sizeof(char) " << endl << flush;
-//#endif
-//
-//
-//  // Calculate the pixel offsets for this tile
-//  uint64_t xoffset = tx * tile_width;
-//  uint64_t yoffset = ty * tile_height;
-//
-//  //char* dest =  (char*) malloc(tw * th * channels * sizeof(char));
-//  //if (!dest) throw string("FATAL : getTile >> allocation memory ERROR");
-//  read(openslide_zoom, tw, th, xoffset, yoffset, rawtile->data);
-//  //rawtile->data = dest;
-//
-//#ifdef DEBUG_OSI
-//  logfile << "OpenSlide :: getTile() :: " << timer.getTime() << " microseconds" << endl << flush;
-//  logfile << "TILE RENDERED" << std::endl;
-//#endif
-//
-//  return ( rawtile );
-//
-//
-//}
-
 //
 //// TCP: support get region (internally, already doing it.
 ///// Overloaded function for returning a region for a given angle and resolution
@@ -603,18 +483,6 @@ RawTilePtr OpenSlideImage::getCachedTile(const size_t tilex, const size_t tiley,
 	// tile manager will cache if needed
     return getNativeTile(tilex, tiley, iipres);
 
-
-//#ifdef DEBUG_OSI
-//  timer.start();
-//#endif
-//
-//  // cache it
-//  tileCache->insert(rt);   // copy is made?
-//
-//#ifdef DEBUG_OSI
-//  logfile << "OpenSlide :: getNativeTile() :: cache insert :: " << timer.getTime() << " microseconds" << endl << flush;
-//#endif
-//	return rt;
 
   } else {
     // not supported by native openslide layer, so need to compose from next level up,

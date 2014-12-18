@@ -40,7 +40,7 @@
 #include <ctime>
 #include "Timer.h"
 
-#define DEBUG_RT 1
+//#define DEBUG_RT 1
 
 
 

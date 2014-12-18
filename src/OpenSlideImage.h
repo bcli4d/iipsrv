@@ -1,8 +1,10 @@
 /* 
  * File:   OpenSlideImage.h
- * Author: stevben
+ * Author: Tony Pan
  *
- * Created on 18 avril 2011, 13:13
+ * rewrite, loosely based on https://github.com/cytomine/iipsrv
+ *
+ *
  */
 
 
