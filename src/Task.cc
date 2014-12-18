@@ -158,8 +158,8 @@ void CNT::run( Session* session, const std::string& argument ){
 
 void GAM::run( Session* session, const std::string& argument ){
 
-  float gamma = 0.0;  // hack to get this value exact.
-  if (argument != "0" && argument != "0.0") {
+  float gamma = 1.0;  // hack to get this value exact.
+  if (argument != "1" && argument != "1.0") {
     gamma = (float) atof( argument.c_str() );
   }
 
