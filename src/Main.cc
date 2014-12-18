@@ -18,7 +18,8 @@
     Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.
 */
 
-
+//#define DEBUG 1
+// specify -DDEBUG as CXXFLAGS is better.
 
 
 
@@ -43,11 +44,14 @@
 #include "Environment.h"
 #include "Writer.h"
 
+#ifndef DEBUG
+
 #ifdef HAVE_MEMCACHED
 #ifdef WIN32
 #include "../windows/MemcachedWindows.h"
 #else
 #include "Memcached.h"
+#endif
 #endif
 #endif
 
@@ -75,7 +79,6 @@ static void unsetenv(char *env_name) {
 #endif
 
 
-//#define DEBUG 1
 
 
 using namespace std;
@@ -302,7 +305,7 @@ int main( int argc, char *argv[] )
     }
   }
 
-
+#ifndef DEBUG
 #ifdef HAVE_MEMCACHED
 
   // Get our list of memcached servers if we have any and the timeout
@@ -320,7 +323,7 @@ int main( int argc, char *argv[] )
   }
 
 #endif
-
+#endif
 
 
   // Add a new line
@@ -411,12 +414,12 @@ int main( int argc, char *argv[] )
   ****************/
 
 #ifdef DEBUG
-  int status = true;
-  while( status ){
+    for (int ii = 0; ii < 1000; ++ii) {
+
+            tileCache.clear();
 
     FILE *f = fopen( "test.jpg", "w" );
     FileWriter writer( f );
-    status = false;
 
 #else
 
@@ -484,6 +487,8 @@ int main( int argc, char *argv[] )
       session.headers.empty();
 
       // Get certain HTTP headers, such as if_modified_since and the query_string
+#ifndef DEBUG
+
       char* header = NULL;
       if( (header = FCGX_GetParam("HTTP_IF_MODIFIED_SINCE", request.envp)) ){
 	session.headers["HTTP_IF_MODIFIED_SINCE"] = string(header);
@@ -491,6 +496,7 @@ int main( int argc, char *argv[] )
 	  logfile << "HTTP Header: If-Modified-Since: " << session.headers["HTTP_IF_MODIFIED_SINCE"] << endl;
 	}
       }
+#endif
       session.headers["QUERY_STRING"] = request_string;
       session.headers["SERVER_PROTOCOL"] =  FCGX_GetParam("SERVER_PROTOCOL", request.envp);
       session.headers["HTTP_HOST"] = FCGX_GetParam("HTTP_HOST", request.envp);
@@ -498,6 +504,7 @@ int main( int argc, char *argv[] )
       session.headers["BASE_URL"] = base_url;
 
 
+#ifndef DEBUG
 
 #ifdef HAVE_MEMCACHED
       // Check whether this exists in memcached, but only if we haven't had an if_modified_since
@@ -512,7 +519,7 @@ int main( int argc, char *argv[] )
 	}
       }
 #endif
-
+#endif
 
       // Parse up the command list
 
@@ -594,6 +601,7 @@ int main( int argc, char *argv[] )
       ////////// - Note that we never store errors ///////////
       //////////   or 304 replies                  ///////////
       ////////////////////////////////////////////////////////
+#ifndef DEBUG
 
 #ifdef HAVE_MEMCACHED
       if( memcached.connected() ){
@@ -606,7 +614,7 @@ int main( int argc, char *argv[] )
 	}
       }
 #endif
-
+#endif
 
 
       //////////////////////////////////////////////////////

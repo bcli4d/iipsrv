@@ -87,10 +87,11 @@ void OpenSlideImage::loadImageInfo(int x, int y) throw (std::string) {
   currentX = x;
   currentY = y;
 
+  const char* error;
 
 #ifdef DEBUG_OSI
   const char* const* prop_names = openslide_get_property_names(osr);
-  const char* error = openslide_get_error(osr);
+  error = openslide_get_error(osr);
   if (error) {
     logfile << "ERROR: encountered error: " << error << " while getting property names: " << error << endl;
   }

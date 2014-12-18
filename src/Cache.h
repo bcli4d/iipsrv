@@ -212,6 +212,10 @@ class Cache {
 
    /// Destructor
    virtual ~Cache() {
+     clear();
+   }
+
+   void clear() {
 #if !defined(HAS_SHARED_PTR)
      for (List_Iter it = objList.begin(); it != objList.end(); ++it) {
        delete *it;
