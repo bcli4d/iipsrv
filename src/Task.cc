@@ -144,7 +144,10 @@ void MINMAX::run( Session* session, const std::string& argument ){
 
 void CNT::run( Session* session, const std::string& argument ){
 
-  float contrast = (float) atof( argument.c_str() );
+  float contrast = 1.0;  // hack to get this value exact.
+  if (argument != "1" && argument != "1.0") {
+    contrast = (float) atof( argument.c_str() );
+  }
 
   if( session->loglevel >= 2 ) *(session->logfile) << "CNT handler reached" << endl;
   if( session->loglevel >= 3 ) *(session->logfile) << "CNT :: requested contrast adjustment is " << contrast << endl;
@@ -155,7 +158,10 @@ void CNT::run( Session* session, const std::string& argument ){
 
 void GAM::run( Session* session, const std::string& argument ){
 
-  float gamma = (float) atof( argument.c_str() );
+  float gamma = 0.0;  // hack to get this value exact.
+  if (argument != "0" && argument != "0.0") {
+    gamma = (float) atof( argument.c_str() );
+  }
 
   if( session->loglevel >= 2 ) *(session->logfile) << "GAM handler reached" << endl;
   if( session->loglevel >= 3 ) *(session->logfile) << "GAM :: requested gamma adjustment is " << gamma << endl;
@@ -243,7 +249,10 @@ void RGN::run( Session* session, const std::string& argument ){
 
 void ROT::run( Session* session, const std::string& argument ){
 
-  float rotation = (float) atof( argument.c_str() );
+  float rotation = 0.0;  // hack to get this value exact.
+  if (argument != "0" && argument != "0.0") {
+    rotation = (float) atof( argument.c_str() );
+  }
 
   if( session->loglevel >= 2 ) *(session->logfile) << "ROT handler reached" << endl;
   if( session->loglevel >= 3 ) *(session->logfile) << "ROT :: requested rotation is " << rotation << " degrees" << endl;
