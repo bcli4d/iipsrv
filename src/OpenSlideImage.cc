@@ -34,14 +34,6 @@ void OpenSlideImage::openImage() throw (std::string) {
   closeImage();
 
   osr = openslide_open(filename.c_str());
-#ifdef DEBUG_OSI
-  logfile << "OpenSlide :: openImage() :: completed " << filename << endl << flush;
-#endif
-  if (osr == NULL) {
-    logfile << "ERROR: can't open " << filename << " with OpenSlide" << endl << flush;
-    throw string("Error opening '" + filename + "' with OpenSlide");
-  }
-
 
   const char* error = openslide_get_error(osr);
 #ifdef DEBUG_OSI
@@ -55,6 +47,17 @@ void OpenSlideImage::openImage() throw (std::string) {
 #ifdef DEBUG_OSI
   logfile << "OpenSlide :: openImage() :: " << timer.getTime() << " microseconds" << endl << flush;
 #endif
+
+
+#ifdef DEBUG_OSI
+  logfile << "OpenSlide :: openImage() :: completed " << filename << endl << flush;
+#endif
+  if (osr == NULL) {
+    logfile << "ERROR: can't open " << filename << " with OpenSlide" << endl << flush;
+    throw string("Error opening '" + filename + "' with OpenSlide");
+  }
+
+
 
   if (bpc == 0) {
     loadImageInfo(currentX, currentY);
@@ -762,7 +765,7 @@ void OpenSlideImage::bgra2rgb(uint8_t* data, const size_t w, const size_t h) {
   // bswap is only very slightly slower than SSSE3 and AVX2 code, and about 2x faster than naive single byte copies on core i5 ivy bridge.
   uint8_t *out = data;
   uint32_t* in = reinterpret_cast<uint32_t*>(data);
-  uint32_t* end = reinterpret_cast<uint32_t*>(data) + w*h;
+  uint32_t* end = in + w*h;
 
   uint32_t t;
 
@@ -808,16 +811,12 @@ void OpenSlideImage::halfsample_3(const uint8_t* in, const size_t in_w, const si
   out_h = in_h >> 1;
 
   if ((out_w == 0) || (out_h == 0)) {
-#ifdef DEBUG_OSI
-  logfile << "OpenSlide :: halfsample_3() :: zero output width or height " << endl << flush;
-#endif
+      logfile << "OpenSlide :: halfsample_3() :: ERROR: zero output width or height " << endl << flush;
 	  return;
   }
 
   if (!(in)) {
-#ifdef DEBUG_OSI
-  logfile << "OpenSlide :: halfsample_3() :: null input " << endl << flush;
-#endif
+	  logfile << "OpenSlide :: halfsample_3() :: ERROR: null input " << endl << flush;
 	  return;
   }
 
@@ -831,18 +830,21 @@ void OpenSlideImage::halfsample_3(const uint8_t* in, const size_t in_w, const si
   // walk through all pixels in output, except last.
   size_t max_h = out_h - 1,
       max_w = out_w;
+  size_t inRowStride = in_w * channels;
+  size_t inRowStride2 = 2 * inRowStride;
+  size_t inColStride2 = 2 * channels;
   // skip last row, as the very last dest element may have overflow.
   for (size_t j = 0; j < max_h; ++j) {
 	    // move row pointers forward 2 rows at a time - in_w may not be multiple of 2.
-	  row1 = in + j * 2 * in_w * channels;
-	  row2 = row1 + in_w * channels;
+	  row1 = in + j * inRowStride2;
+	  row2 = row1 + inRowStride;
 
     for (size_t i = 0; i < max_w; ++i) {
       *(reinterpret_cast<uint32_t*>(dest)) = halfsample_kernel_3(row1, row2);
       // output is contiguous.
       dest += channels ;
-      row1 += 2 * channels;
-      row2 += 2 * channels ;
+      row1 += inColStride2;
+      row2 += inColStride2;
     }
   }
 
@@ -851,15 +853,15 @@ void OpenSlideImage::halfsample_3(const uint8_t* in, const size_t in_w, const si
 #endif
 
   // for last row, skip the last element
-  row1 = in + max_h * 2 * in_w * channels;
-  row2 = row1 + in_w * channels;
+  row1 = in + max_h * inRowStride2;
+  row2 = row1 + inRowStride;
 
   --max_w;
   for (size_t i = 0; i < max_w; ++i) {
     *(reinterpret_cast<uint32_t*>(dest)) = halfsample_kernel_3(row1, row2);
     dest += channels ;
-    row1 += 2 * channels ;
-    row2 += 2 * channels ;
+    row1 += inColStride2;
+    row2 += inColStride2;
   }
 
 #ifdef DEBUG_OSI
