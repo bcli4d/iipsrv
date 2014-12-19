@@ -498,9 +498,12 @@ int main( int argc, char *argv[] )
       }
 #endif
       session.headers["QUERY_STRING"] = request_string;
+
+#ifndef DEBUG
       session.headers["SERVER_PROTOCOL"] =  FCGX_GetParam("SERVER_PROTOCOL", request.envp);
       session.headers["HTTP_HOST"] = FCGX_GetParam("HTTP_HOST", request.envp);
       session.headers["REQUEST_URI"] = FCGX_GetParam("REQUEST_URI", request.envp);
+#endif
       session.headers["BASE_URL"] = base_url;
 
 
