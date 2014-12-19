@@ -178,6 +178,11 @@ void CVT::send( Session* session ){
   if( complete_image->bpc > 8 || session->view->getContrast() != 1.0 || session->view->getGamma() != 1.0 ||
       session->view->cmapped || session->view->shaded || session->view->inverted || session->view->ctw.size() ){
 
+	    // Apply normalization and float conversion
+	    if( session->loglevel >= 4 ){
+	      *(session->logfile) << "CVT :: Normalizing and converting to float";
+	    }
+
     // Apply normalization and float conversion
     filter_normalize( complete_image, (session->image)->max, (session->image)->min );
 

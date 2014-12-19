@@ -12,9 +12,7 @@
 //#define DEBUG_OSI 1
 using namespace std;
 
-#ifdef DEBUG_OSI
 extern std::ofstream logfile;
-#endif
 
 /// Overloaded function for opening a TIFF image
 void OpenSlideImage::openImage() throw (std::string) {
