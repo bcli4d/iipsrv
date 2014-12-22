@@ -15,7 +15,7 @@ using namespace std;
 extern std::ofstream logfile;
 
 /// Overloaded function for opening a TIFF image
-void OpenSlideImage::openImage() throw (std::string) {
+void OpenSlideImage::openImage() throw (file_error) {
 
   string filename = getFileName(currentX, currentY);
 
@@ -42,7 +42,7 @@ void OpenSlideImage::openImage() throw (std::string) {
 
   if (error) {
     logfile << "ERROR: encountered error: " << error << " while opening " << filename << " with OpenSlide: " << endl << flush;
-    throw string("Error opening '" + filename + "' with OpenSlide, error " + error);
+    throw file_error(string("Error opening '" + filename + "' with OpenSlide, error " + error));
   }
 #ifdef DEBUG_OSI
   logfile << "OpenSlide :: openImage() :: " << timer.getTime() << " microseconds" << endl << flush;
@@ -54,7 +54,7 @@ void OpenSlideImage::openImage() throw (std::string) {
 #endif
   if (osr == NULL) {
     logfile << "ERROR: can't open " << filename << " with OpenSlide" << endl << flush;
-    throw string("Error opening '" + filename + "' with OpenSlide");
+    throw file_error(string("Error opening '" + filename + "' with OpenSlide"));
   }
 
 
@@ -74,7 +74,7 @@ void OpenSlideImage::openImage() throw (std::string) {
 }
 
 /// given an open OSI file, get information from the image.
-void OpenSlideImage::loadImageInfo(int x, int y) throw (std::string) {
+void OpenSlideImage::loadImageInfo(int x, int y) throw (file_error) {
 
 #ifdef DEBUG_OSI
   logfile << "OpenSlideImage :: loadImageInfo()" << endl;
@@ -391,7 +391,7 @@ void OpenSlideImage::closeImage() {
     \param l number of quality layers to decode - for jpeg2000
     \param t tile number  (within the resolution level.)	specified as a sequential number = y * width + x;
  */
-RawTilePtr OpenSlideImage::getTile(int seq, int ang, unsigned int iipres, int layers, unsigned int tile) throw (string) {
+RawTilePtr OpenSlideImage::getTile(int seq, int ang, unsigned int iipres, int layers, unsigned int tile) throw (file_error) {
 
 #ifdef DEBUG_OSI
   Timer timer;
@@ -401,7 +401,7 @@ RawTilePtr OpenSlideImage::getTile(int seq, int ang, unsigned int iipres, int la
   if (iipres > (numResolutions-1)) {
     ostringstream tile_no;
     tile_no << "OpenSlide :: Asked for non-existant resolution: " << iipres;
-    throw tile_no.str();
+    throw file_error(tile_no.str());
     return 0;
   }
 
@@ -428,7 +428,7 @@ RawTilePtr OpenSlideImage::getTile(int seq, int ang, unsigned int iipres, int la
   if (tile >= ntlx * ntly) {
     ostringstream tile_no;
     tile_no << "OpenSlideImage :: Asked for non-existant tile: " << tile;
-    throw tile_no.str();
+    throw file_error(tile_no.str());
   }
 
   // tile x.

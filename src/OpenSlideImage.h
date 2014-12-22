@@ -153,19 +153,19 @@ public:
 	{};
     /// Destructor
 
-    ~OpenSlideImage() {
+    virtual ~OpenSlideImage() {
         closeImage();
     };
 
     /// Overloaded function for opening a TIFF image
-    virtual void openImage() throw (std::string);
+    virtual void openImage() throw (file_error);
 
 
     /// Overloaded function for loading TIFF image information
     /** \param x horizontal sequence angle
         \param y vertical sequence angle
      */
-    virtual void loadImageInfo(int x, int y) throw (std::string);
+    virtual void loadImageInfo(int x, int y) throw (file_error);
 
     /// Overloaded function for closing a TIFF image
     virtual void closeImage();
@@ -178,7 +178,7 @@ public:
         \param l number of quality layers to decode
         \param t tile number
      */
-	virtual RawTilePtr getTile(int x, int y, unsigned int r, int l, unsigned int t) throw (std::string);
+	virtual RawTilePtr getTile(int x, int y, unsigned int r, int l, unsigned int t) throw (file_error);
 
 //    // TCP: turn on region decoding.  problem is that this bypasses tile caching, so overall it's not faster.
 //    /// Return whether this image type directly handles region decoding
