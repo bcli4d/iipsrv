@@ -88,13 +88,13 @@ void DeepZoom::run( Session* session, const std::string& argument ){
 //  dzi_res = (int) ceil( log2(max) );
 
   // alternatively, we can calculate the number of res that would have existed below the smallest available image
-  unsigned int width = (session->image)->getImageWidth(numResolutions-1);
-  unsigned int height = (session->image)->getImageHeight(numResolutions-1);
+  unsigned int width = (session->image)->getImageWidth();
+  unsigned int height = (session->image)->getImageHeight();
   unsigned int maxdim = height > width ? height : width;
 
   // include level 0 which is 1 pixel wide, up to dzi_res which is nearest power of 2 to max(width, height)
   //unsigned int  discard = (unsigned int) ceil( log2(maxdim) ) + 1; // +1, because 1 pixel gives a log2 of 0, is also a res.
-  unsigned int resOffset = (unsigned int) ceil( log2(maxdim) );  // no +1 because we keep the lowest res.
+  unsigned int resOffset = (unsigned int) ceil( log2(maxdim) ) + 1 - numResolutions;  // no +1 because we keep the lowest res.
 
   if( session->loglevel >= 4 ){
     *(session->logfile) << "DeepZoom :: virtually existing " << resOffset << " lower resolutions below real: " << numResolutions << endl;
@@ -165,7 +165,7 @@ void DeepZoom::run( Session* session, const std::string& argument ){
 
   if( session->loglevel >= 2 ){
     *(session->logfile) << "DeepZoom :: Tile request for resolution: "
-			<< resolution << " at x: " << x << ", y: " << y << endl;
+			<< resolution << " at tile x: " << x << ", y: " << y << endl;
   }
 
 
