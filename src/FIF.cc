@@ -105,9 +105,15 @@ void FIF::run( Session* session, const string& src ){
       // eviction handled by ImageCache.
 
        //==== Create our test IIPImage object to get timestamp and image type.
-        IIPImage test = IIPImage( argument );
-        test.setFileNamePattern( filename_pattern );
-        test.setFileSystemPrefix( filesystem_prefix );
+	string path = filesystem_prefix+argument;
+	if (isRemote(path)) {
+	  IIPRemImage test = IIPRemImage( argument );
+	}
+	else {
+	  IIPImage test = IIPImage( argument );
+	}
+	test.setFileNamePattern( filename_pattern );
+	test.setFileSystemPrefix( filesystem_prefix );
         test.Initialise();  // also gathers the timestamp here.
 
         /***************************************************************
@@ -123,7 +129,7 @@ void FIF::run( Session* session, const string& src ){
 #pragma mark Adding in basic openslide functionality
         else if( format == OPENSLIDE ){
           if( session->loglevel >= 2 ) *(session->logfile) << "FIF :: OpenSlide image detected" << endl;
-          temp = IIPImagePtr(new OpenSlideImage( test, session->tileCache ));
+          temp = IIPImagePtr(new OpenSlideRemImage( test, session->tileCache ));
         }
     #ifdef HAVE_KAKADU
         else if( format == JPEG2000 ){
