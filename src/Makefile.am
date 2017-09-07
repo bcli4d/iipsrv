@@ -4,7 +4,7 @@ noinst_PROGRAMS =	iipsrv.fcgi
 
 
 INCLUDES =		@INCLUDES@ @LIBFCGI_INCLUDES@ @JPEG_INCLUDES@ @TIFF_INCLUDES@
-LIBS =			@LIBS@ @LIBFCGI_LIBS@ @DL_LIBS@ @JPEG_LIBS@ @TIFF_LIBS@ -lm -lopenslide -lopenjp2 
+LIBS =			@LIBS@ @LIBFCGI_LIBS@ @DL_LIBS@ @JPEG_LIBS@ @TIFF_LIBS@ -lm -lopenslide -lopenjp2 -lcurl 
 AM_LDFLAGS =		@LIBFCGI_LDFLAGS@
 AM_CPPFLAGS = -I/usr/local/include/openslide
 
@@ -25,10 +25,12 @@ endif
 EXTRA_iipsrv_fcgi_SOURCES = DSOImage.h DSOImage.cc KakaduImage.h KakaduImage.cc PNGCompressor.h PNGCompressor.cc PTL.cc Main.cc
 
 iipsrv_fcgi_SOURCES = \
-			IIPImage.h \
-			IIPImage.cc \
 			TPTImage.h \
 			TPTImage.cc \
+			IIPImage.h \
+			IIPImage.cc \
+			IIPRemImage.h \
+			IIPRemImage.cc \
 			OpenSlideImage.h \
 			OpenSlideImage.cc \
 			JPEGCompressor.h \

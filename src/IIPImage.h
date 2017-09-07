@@ -225,6 +225,12 @@ class IIPImage {
   /// Return the image path
   const std::string& getImagePath() { return imagePath; };
 
+  /// Return the file system prefix for this image
+  const std::string& getFileSystemPrefix() { return fileSystemPrefix; };
+
+  /// Set the file suffix
+  void setSuffix(const std::string& sx ) { suffix = sx; };
+
   /// Return the full file path for a particular horizontal and vertical angle
   /** @param x horizontal sequence angle
       @param y vertical sequence angle
@@ -297,6 +303,9 @@ class IIPImage {
 
   /// Return the colour space for this image
   ColourSpaces getColourSpace() { return colourspace; };
+
+  /// Set isFile for this image
+  void setIsFile(bool is) { isFile = is; };
 
   /// Return image metadata
   /** @param index metadata field name */

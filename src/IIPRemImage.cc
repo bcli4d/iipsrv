@@ -41,6 +41,8 @@
 #include <limits>
 
 
+
+
 using namespace std;
 
 
@@ -50,26 +52,25 @@ void IIPRemImage::testImageType() throw(file_error)
   // Check whether it is a regular file
   struct stat sb;
 
+  string fileSystemPrefix = getFileSystemPrefix();
+  string imagePath = getImagePath();
   string path = fileSystemPrefix + imagePath;
 
-  if( (rem_stat(path.c_str(),&sb)==0) && S_ISREG(sb.st_mode) ){
+  if( (stat_remote(path.c_str(),&sb)==0) && S_ISREG(sb.st_mode) ){
 
-    isFile = true;
+    setIsFile(true);
     int dot = imagePath.find_last_of( "." );
-    suffix = imagePath.substr( dot + 1, imagePath.length() );
+    string suffix = imagePath.substr( dot + 1, imagePath.length() );
+    setSuffix( suffix );
     timestamp = sb.st_mtime;
 
     // Determine our file format using magic file signatures
     unsigned char header[10];
-    FILE *im = rem_fopen( path.c_str(), "rb" );
-    if( im == NULL ){
-      string message = "Unable to open file '" + path + "'";
-      throw file_error( message );
-    }
+    fopen_remote( path.c_str(), "rb" );
 
     // Read and close immediately
-    int len = rem_fread( header, 1, 10, im );
-    rem_fclose( im );
+    int len = fread_remote( header, 1, 10 );
+    fclose_remote( );
 
     // Make sure we were able to read enough bytes
     if( len < 10 ){
@@ -162,14 +163,14 @@ time_t IIPRemImage::getFileTimestamp(const string& path) throw(file_error)
   // Get a modification time for our image
   struct stat sb;
 
-  if( rem_stat( path.c_str(), &sb ) == -1 ){
+  if( stat_remote( path.c_str(), &sb ) == -1 ){
     string message = string( "Unable to open file " ) + path;
     throw file_error( message );
   }
   return sb.st_mtime;
 }
 
-int IIPRemImage::rem_stat(const char *pathname, struct stat *buf)
+int IIPRemImage::stat_remote(const char *pathname, struct stat *buf)
 {
   CURLcode res;
   long file_time = -1;
@@ -209,6 +210,18 @@ int IIPRemImage::rem_stat(const char *pathname, struct stat *buf)
 
       /* Return filetime as st_mtime */
       buf->st_mtime = file_time;
+      
+      /* Reset some options */
+      curl_easy_setopt(curl, CURLOPT_NOBODY, 0L);
+      curl_easy_setopt(curl, CURLOPT_FILETIME, 0L);
+      curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, NULL);
+
+      /* Preset some others */
+      /* send all data to this function  */
+      curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, copy_data);
+
+      /* Set the range of bytes to read */
+      curl_easy_setopt(curl, CURLOPT_RANGE, range);
 
       return 0;
     }
@@ -221,27 +234,43 @@ int IIPRemImage::rem_stat(const char *pathname, struct stat *buf)
     // fprintf(stderr, "curl told us %d\n", res);                                                          
     return -1;
   }
+  
 }
 
+size_t IIPRemImage::throw_away(void *ptr, size_t size, size_t nmemb, void *data) {
+  (void)ptr;
+  (void)data;
+  /* we are not interested in the headers itself,                                                              \
+     so we only return the size we would have saved ... */
+  return (size_t)(size * nmemb);
+}
+
+
+
 /// Open a possibly file.                                                                           
-int IIPRemImage::rem_fopen(const char *pstr, const char *mode){
+int IIPRemImage::fopen_remote(const char *pstr, const char *mode){
   /*                                                                                                     
    * If file is remote we don't actually open it. Presumably the file exists                             
-   * remotely or the previous call to rem_stat() would have failed and                                   
+   * remotely or the previous call to stat_remote() would have failed and                                   
    * we would not have gotten here.                                                                      
    */
   offset = 0;
   isRemote = true;
   return 0;
-}
+ }
+
+struct MemoryStruct {
+  char *memory;
+  size_t size;
+  size_t buf_size;
+};
 
 /// Read from a remote file                                                                                
-size_t IIPRemImage::rem_fread(void *buf, size_t size, size_t nmemb){
-{
+size_t IIPRemImage::fread_remote(void *buf, size_t size, size_t nmemb){
+
   CURLcode res;
   ssize_t rsize;
-  char range[256];
-  const char * pathname = (im->getFileSystemPrefix()+im->getImagePath()).c_str();
+  const char * pathname = (getFileSystemPrefix() + getImagePath()).c_str();
 
   struct MemoryStruct chunk;
 
@@ -252,14 +281,16 @@ size_t IIPRemImage::rem_fread(void *buf, size_t size, size_t nmemb){
   /* Generate range string*/
   sprintf(range,"%d-%ld",offset, offset+size-1);
 
+#if 0 //Pathname and copy function should already be in curl handle
   /* specify URL to get */
   curl_easy_setopt(curl, CURLOPT_URL, pathname);
 
-  /* Set the range of bytes to read */
-  curl_easy_setopt(curl, CURLOPT_RANGE, range);
-
   /* send all data to this function  */
   curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, copy_data);
+
+  /* Set the range of bytes to read */
+  curl_easy_setopt(curl, CURLOPT_RANGE, range);
+#endif
 
   /* we pass our 'chunk' struct to the callback function */
   curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&chunk);
@@ -299,6 +330,6 @@ size_t IIPRemImage::copy_data(void *buffer, size_t size, size_t nmemb, void *use
 }
 
 /// Close a remote file. Really nothing to do.                                                                          
-int IIPRemImage::rem_fclose( ){
+int IIPRemImage::fclose_remote( ){
   return 0;
 }

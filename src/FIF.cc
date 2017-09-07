@@ -21,6 +21,7 @@
 
 #include <ctime>
 #include "OpenSlideImage.h"
+#include "IIPRemImage.h"
 #include <sys/stat.h>
 #include <limits>
 
@@ -36,6 +37,7 @@
 
 #define MAXIMAGECACHE 500  // Max number of items in image cache
 
+const std::string FIF::remote_prefixes[] = { "https:/"};                                                                    
 
 
 using namespace std;
@@ -129,7 +131,7 @@ void FIF::run( Session* session, const string& src ){
 #pragma mark Adding in basic openslide functionality
         else if( format == OPENSLIDE ){
           if( session->loglevel >= 2 ) *(session->logfile) << "FIF :: OpenSlide image detected" << endl;
-          temp = IIPImagePtr(new OpenSlideRemImage( test, session->tileCache ));
+          temp = IIPImagePtr(new OpenSlideImage( test, session->tileCache ));
         }
     #ifdef HAVE_KAKADU
         else if( format == JPEG2000 ){
@@ -253,3 +255,14 @@ void FIF::run( Session* session, const string& src ){
   }
 
 }
+
+bool FIF::isRemote(const string& filename) {
+  uint i;
+  for (i = 0; i < sizeof(remote_prefixes)/sizeof(remote_prefixes[0]); i++) {
+    if (filename.find(remote_prefixes[i])) {
+      return true;
+    }
+  }
+  return false;
+}
+

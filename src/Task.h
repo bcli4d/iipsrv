@@ -212,8 +212,11 @@ class ROT : public Task {
 
 /// FIF Command
 class FIF : public Task {
+ protected:
  public:
   void run( Session* session, const std::string& argument );
+  bool isRemote( const std::string& path );
+  static const std::string remote_prefixes[];  
 };
 
 

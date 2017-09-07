@@ -52,6 +52,9 @@ class IIPRemImage : public IIPImage {
   /// libcurl session handle                                                                               
   CURL *curl;
 
+  /// Buffer to hold range of bytes to get. Passed to libcurl
+  char range[256]; 
+
   /// True if file is remote                                                                               
   bool isRemote;
 
@@ -107,7 +110,7 @@ class IIPRemImage : public IIPImage {
     curl( image.curl ),
     isRemote( image.isRemote ),
     local_handle( image.local_handle )
-      {};
+  {};
 
   /// Virtual Destructor                                                                                   
   virtual ~IIPRemImage() {
@@ -117,20 +120,22 @@ class IIPRemImage : public IIPImage {
   /// Get the image timestamp                                                                              
   /** @param s file path                                                                                 
    */
-  void getFileTimestamp( const std::string& s ) throw( file_error );
+  time_t getFileTimestamp( const std::string& s ) throw( file_error );
 
   /// Open a possibly remote file.                                                                         
-  int rem_fopen( const char *pathname, const char *mode );
+  int fopen_remote( const char *pathname, const char *mode );
 
   /// Read from a possibly remote file.                                                                    
-  size_t rem_fread( void *ptr, size_t size, size_t nmemb );
+  size_t fread_remote( void *ptr, size_t size, size_t nmemb );
 
   /// Close a possible remote file.                                                                        
-  int rem_fclose( );
+  int fclose_remote( );
 
   /// Get file status of a possibly remote file.                                                           
-  int rem_stat( const char *pathname, struct stat *buf );
+  int stat_remote( const char *pathname, struct stat *buf );
 
+  /// Get curl session handle
+  CURL * getCurl(){ return curl; };
 };
 
 #endif
