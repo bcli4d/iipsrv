@@ -177,6 +177,8 @@ int IIPRemImage::stat_remote(const char *pathname, struct stat *buf)
   double filesize = 0.0;
   //const char *filename = strrchr(ftpurl, '/') + 1;                                                       
 
+  curl = curl_easy_init();
+
   curl_easy_setopt(curl, CURLOPT_URL, pathname);
   /* No download if the file */
   curl_easy_setopt(curl, CURLOPT_NOBODY, 1L);
@@ -223,18 +225,12 @@ int IIPRemImage::stat_remote(const char *pathname, struct stat *buf)
       /* Set the range of bytes to read */
       curl_easy_setopt(curl, CURLOPT_RANGE, range);
 
+      curl_easy_cleanup(curl);
       return 0;
     }
-    else {
-      return -1;
-    }
   }
-  else {
-    /* we failed */
-    // fprintf(stderr, "curl told us %d\n", res);                                                          
-    return -1;
-  }
-  
+  curl_easy_cleanup(curl);
+  return -1;  
 }
 
 size_t IIPRemImage::throw_away(void *ptr, size_t size, size_t nmemb, void *data) {
@@ -256,6 +252,7 @@ int IIPRemImage::fopen_remote(const char *pstr, const char *mode){
    */
   offset = 0;
   isRemote = true;
+  curl = curl_easy_init();
   return 0;
  }
 
@@ -281,7 +278,7 @@ size_t IIPRemImage::fread_remote(void *buf, size_t size, size_t nmemb){
   /* Generate range string*/
   sprintf(range,"%d-%ld",offset, offset+size-1);
 
-#if 0 //Pathname and copy function should already be in curl handle
+  //Pathname and copy function should already be in curl handle
   /* specify URL to get */
   curl_easy_setopt(curl, CURLOPT_URL, pathname);
 
@@ -290,7 +287,6 @@ size_t IIPRemImage::fread_remote(void *buf, size_t size, size_t nmemb){
 
   /* Set the range of bytes to read */
   curl_easy_setopt(curl, CURLOPT_RANGE, range);
-#endif
 
   /* we pass our 'chunk' struct to the callback function */
   curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&chunk);
@@ -331,5 +327,6 @@ size_t IIPRemImage::copy_data(void *buffer, size_t size, size_t nmemb, void *use
 
 /// Close a remote file. Really nothing to do.                                                                          
 int IIPRemImage::fclose_remote( ){
+  curl_easy_cleanup(curl);
   return 0;
 }
