@@ -259,7 +259,7 @@ void FIF::run( Session* session, const string& src ){
 bool FIF::isRemote(const string& filename) {
   uint i;
   for (i = 0; i < sizeof(remote_prefixes)/sizeof(remote_prefixes[0]); i++) {
-    if (filename.find(remote_prefixes[i])) {
+    if (0==filename.find(remote_prefixes[i])) {
       return true;
     }
   }
