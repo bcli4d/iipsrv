@@ -109,9 +109,11 @@ void FIF::run( Session* session, const string& src ){
        //==== Create our test IIPImage object to get timestamp and image type.
 	string path = filesystem_prefix+argument;
 	if (isRemote(path)) {
+	  if( session->loglevel >= 2 ) *(session->logfile) << "FIF :: Remote file" << endl;
 	  IIPRemImage test = IIPRemImage( argument );
 	}
 	else {
+	  if( session->loglevel >= 2 ) *(session->logfile) << "FIF :: Local file" << endl;
 	  IIPImage test = IIPImage( argument );
 	}
 	test.setFileNamePattern( filename_pattern );
