@@ -158,6 +158,15 @@ void IIPRemImage::testImageType() throw(file_error)
 
 }
 
+bool IIPRemImage::updateTimestamp( const string& path ) throw(file_error)
+{
+  time_t newtime = IIPRemImage::getFileTimestamp(path);
+  double modified = difftime(newtime, timestamp);
+  timestamp = newtime;
+  if (modified > std::numeric_limits<double>::round_error()) return true;
+  else return false;
+}
+
 time_t IIPRemImage::getFileTimestamp(const string& path) throw(file_error)
 {
   // Get a modification time for our image
@@ -168,6 +177,25 @@ time_t IIPRemImage::getFileTimestamp(const string& path) throw(file_error)
     throw file_error( message );
   }
   return sb.st_mtime;
+}
+
+void IIPRemImage::Initialise()
+{
+  testImageType();
+
+  if( !getIsFile() ){
+    // Measure sequence angles                                                                                                  
+    measureHorizontalAngles();
+
+    // Measure vertical view angles                                                                                             
+    measureVerticalAngles();
+  }
+  // If it's a single value, give the view default angles of 0 and 90                                                           
+  else{
+    horizontalAnglesList.push_front( 0 );
+    verticalAnglesList.push_front( 90 );
+  }
+
 }
 
 int IIPRemImage::stat_remote(const char *pathname, struct stat *buf)
@@ -267,7 +295,11 @@ size_t IIPRemImage::fread_remote(void *buf, size_t size, size_t nmemb){
 
   CURLcode res;
   ssize_t rsize;
-  const char * pathname = (getFileSystemPrefix() + getImagePath()).c_str();
+  string fileSystemPrefix = getFileSystemPrefix();
+  string imagePath = getImagePath();
+  string path = fileSystemPrefix + imagePath;
+
+  char * pathname = strdup(path.c_str());
 
   struct MemoryStruct chunk;
 
@@ -276,7 +308,7 @@ size_t IIPRemImage::fread_remote(void *buf, size_t size, size_t nmemb){
   chunk.buf_size = size*nmemb;
 
   /* Generate range string*/
-  sprintf(range,"%d-%ld",offset, offset+size-1);
+  sprintf(range,"%d-%ld",offset, offset+chunk.buf_size-1);
 
   //Pathname and copy function should already be in curl handle
   /* specify URL to get */
@@ -294,7 +326,9 @@ size_t IIPRemImage::fread_remote(void *buf, size_t size, size_t nmemb){
   /* Perform the request */
   res = curl_easy_perform(curl);
 
-  /* check for errors */
+  free(pathname);
+  
+/* check for errors */
   if(res != CURLE_OK) {
     fprintf(stderr, "curl_easy_perform() failed: %s\n",
             curl_easy_strerror(res));

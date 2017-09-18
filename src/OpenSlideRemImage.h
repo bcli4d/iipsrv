@@ -1,8 +1,8 @@
 /* 
  * File:   OpenSlideRemImage.h
- * Author: Tony Pan
+ * Author: William Clifford
  *
- * rewrite, loosely based on https://github.com/cytomine/iipsrv
+ * Clone of OpenSlideImage to allow accessing remote files
  *
  *
  */
@@ -11,7 +11,7 @@
 #ifndef OPENSLIDEREMIMAGE_H
 #define	OPENSLIDEREMIMAGE_H
 
-#include "IIPImage.h"
+#include "IIPRemImage.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -113,7 +113,7 @@ private:
     		uint8_t* out, const size_t& out_w, const size_t& out_h);
 
     /// Constructor
-    OpenSlideImage() : IIPImage() {
+    OpenSlideRemImage() : IIPRemImage() {
         tile_width = OPENSLIDE_TILESIZE;
         tile_height = OPENSLIDE_TILESIZE;
         osr = NULL;
@@ -125,7 +125,7 @@ public:
     /// Constructor
     /** \param path image path
      */
-    OpenSlideImage(const std::string& path, TileCache* tile_cache) : IIPImage(path), tileCache(tile_cache) {
+    OpenSlideRemImage(const std::string& path, TileCache* tile_cache) : IIPRemImage(path), tileCache(tile_cache) {
         tile_width = OPENSLIDE_TILESIZE;
         tile_height = OPENSLIDE_TILESIZE;
         osr = NULL;
@@ -135,14 +135,14 @@ public:
 
     /** \param image IIPImage object
      */
-    OpenSlideImage(const IIPImage& image, TileCache* tile_cache) : IIPImage(image), tileCache(tile_cache) {
+    OpenSlideRemImage(const IIPRemImage& image, TileCache* tile_cache) : IIPRemImage(image), tileCache(tile_cache) {
         osr = NULL;
     };
 
 
     /** \param image IIPImage object
      */
-    explicit OpenSlideImage(const OpenSlideImage& image) : IIPImage(image),
+    explicit OpenSlideRemImage(const OpenSlideRemImage& image) : IIPRemImage(image),
     		osr(image.osr), tileCache(image.tileCache),
     		numTilesX(image.numTilesX),
     		numTilesY(image.numTilesY),
@@ -153,7 +153,7 @@ public:
 	{};
     /// Destructor
 
-    virtual ~OpenSlideImage() {
+    virtual ~OpenSlideRemImage() {
         closeImage();
     };
 

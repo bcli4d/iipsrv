@@ -114,8 +114,16 @@ class IIPRemImage : public IIPImage {
 
   /// Virtual Destructor                                                                                   
   virtual ~IIPRemImage() {
-    curl_easy_cleanup(curl);
+    //    curl_easy_cleanup(curl);
   };
+
+  /// Test the image and initialise some parameters                                                                          
+  void Initialise();
+
+  /// Get the image timestamp and update the stored var                                                                        
+  /** @param s file path                                                                                                       
+   */
+  bool updateTimestamp( const std::string& s ) throw( file_error );
 
   /// Get the image timestamp                                                                              
   /** @param s file path                                                                                 

@@ -33,6 +33,8 @@ iipsrv_fcgi_SOURCES = \
 			IIPRemImage.cc \
 			OpenSlideImage.h \
 			OpenSlideImage.cc \
+			OpenSlideRemImage.h \
+			OpenSlideRemImage.cc \
 			JPEGCompressor.h \
 			JPEGCompressor.cc \
 			RawTile.h \

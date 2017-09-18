@@ -40,6 +40,7 @@
 #include <ctime>
 #include <limits>
 
+#include <fstream>
 
 using namespace std;
 
@@ -86,6 +87,14 @@ void IIPImage::testImageType() throw(file_error)
 
   string path = fileSystemPrefix + imagePath;
 
+  ofstream logfile;
+  char * lf = "/tmp/iipsrv1.log";
+  logfile.open ( lf, ios::app);
+
+
+  logfile << "IIPImage.cc: fileSystemPrefix is "<< fileSystemPrefix << "\n";
+  logfile << "IIPImage.cc: imagePath is  "<< imagePath << "\n";
+  logfile << "IIPImage.cc: stat "<<fileSystemPrefix<<imagePath << "\n";
   if( (stat(path.c_str(),&sb)==0) && S_ISREG(sb.st_mode) ){
 
     isFile = true;
@@ -97,13 +106,17 @@ void IIPImage::testImageType() throw(file_error)
     unsigned char header[10];
     FILE *im = fopen( path.c_str(), "rb" );
     if( im == NULL ){
+      logfile << "IIPImage.cc: fopen failed" << "\n";
       string message = "Unable to open file '" + path + "'";
       throw file_error( message );
     }
 
     // Read and close immediately
+    logfile << "IIPImage.cc: trying fread" << "\n";
     int len = fread( header, 1, 10, im );
+    logfile << "IIPImage.cc: trying fclose" << "\n";
     fclose( im );
+    logfile << "IIPImage.cc: did fcose" << "\n";
 
     // Make sure we were able to read enough bytes
     if( len < 10 ){

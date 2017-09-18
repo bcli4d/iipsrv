@@ -31,7 +31,7 @@ void OpenSlideRemImage::openImage() throw (file_error) {
   // close previous
   closeImage();
 
-  osr = openslide_rem_open(filename.c_str());
+  osr = openslide_open(filename.c_str());
 
   const char* error = openslide_get_error(osr);
 #ifdef DEBUG_OSI

@@ -80,6 +80,8 @@ class IIPImage {
   /// Private function to determine the image type
   void testImageType() throw( file_error );
 
+ protected:
+
   /// If we have a sequence of images, determine which horizontal angles exist
   void measureHorizontalAngles();
 
@@ -91,7 +93,6 @@ class IIPImage {
 
   /// The list of available vertical angles (for image sequences)
   std::list <int> verticalAnglesList;
-
 
  public:
 
@@ -306,6 +307,9 @@ class IIPImage {
 
   /// Set isFile for this image
   void setIsFile(bool is) { isFile = is; };
+
+  /// Get isFile for this image
+  bool getIsFile() { return isFile; };
 
   /// Return image metadata
   /** @param index metadata field name */

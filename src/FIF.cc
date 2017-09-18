@@ -21,9 +21,12 @@
 
 #include <ctime>
 #include "OpenSlideImage.h"
+#include "OpenSlideRemImage.h"
 #include "IIPRemImage.h"
 #include <sys/stat.h>
 #include <limits>
+#include <vector>
+#include <string>
 
 #include <algorithm>
 #include "Task.h"
@@ -37,12 +40,9 @@
 
 #define MAXIMAGECACHE 500  // Max number of items in image cache
 
-const std::string FIF::remote_prefixes[] = { "https:/"};                                                                    
-
-
 using namespace std;
 
-
+std::vector<std::string> remote_prefixes = { "http:/", "https:/"};
 
 void FIF::run( Session* session, const string& src ){
 
@@ -111,47 +111,83 @@ void FIF::run( Session* session, const string& src ){
 	if (isRemote(path)) {
 	  if( session->loglevel >= 2 ) *(session->logfile) << "FIF :: Remote file" << endl;
 	  IIPRemImage test = IIPRemImage( argument );
+	  test.setFileNamePattern( filename_pattern );
+	  test.setFileSystemPrefix( filesystem_prefix );
+	  test.Initialise();  // also gathers the timestamp here.
+
+	  /***************************************************************
+	    Test for different image types - only TIFF is native for now
+	  ***************************************************************/
+
+	  ImageFormat format = test.getImageFormat();
+
+	  if( format == TIF ){
+	    if( session->loglevel >= 2 ) *(session->logfile) << "FIF :: TIFF image detected" << endl;
+	    temp = IIPImagePtr(new TPTImage( test ));
+	  }
+  #pragma mark Adding in basic openslide functionality
+	  else if( format == OPENSLIDE ){
+	    if( session->loglevel >= 2 ) *(session->logfile) << "FIF :: OpenSlide image detected" << endl;
+	    temp = IIPImagePtr(new OpenSlideRemImage( test, session->tileCache ));
+	  }
+      #ifdef HAVE_KAKADU
+	  else if( format == JPEG2000 ){
+	    if( session->loglevel >= 2 ) *(session->logfile) << "FIF :: JPEG2000 image detected" << endl;
+	    temp = IIPImagePtr(new KakaduImage( test ));
+	  }
+      #endif
+	  else throw string( "Unsupported image type: " + argument );
+
+	  //==== create format specific iipimage subclass instance as pointer.
+
+	  // Open image, and add it to our cache
+	  temp->openImage();
+	  session->imageCache->insert(temp);    // insert into cache.
+
+	  if( session->loglevel >= 3 ){
+	    *(session->logfile) << "FIF :: Created and cached image object with key = \"" << argument << "\"" << endl;
+	  }
 	}
 	else {
 	  if( session->loglevel >= 2 ) *(session->logfile) << "FIF :: Local file" << endl;
 	  IIPImage test = IIPImage( argument );
+	  test.setFileNamePattern( filename_pattern );
+	  test.setFileSystemPrefix( filesystem_prefix );
+	  test.Initialise();  // also gathers the timestamp here.
+
+	  /***************************************************************
+	    Test for different image types - only TIFF is native for now
+	  ***************************************************************/
+
+	  ImageFormat format = test.getImageFormat();
+
+	  if( format == TIF ){
+	    if( session->loglevel >= 2 ) *(session->logfile) << "FIF :: TIFF image detected" << endl;
+	    temp = IIPImagePtr(new TPTImage( test ));
+	  }
+  #pragma mark Adding in basic openslide functionality
+	  else if( format == OPENSLIDE ){
+	    if( session->loglevel >= 2 ) *(session->logfile) << "FIF :: OpenSlide image detected" << endl;
+	    temp = IIPImagePtr(new OpenSlideImage( test, session->tileCache ));
+	  }
+      #ifdef HAVE_KAKADU
+	  else if( format == JPEG2000 ){
+	    if( session->loglevel >= 2 ) *(session->logfile) << "FIF :: JPEG2000 image detected" << endl;
+	    temp = IIPImagePtr(new KakaduImage( test ));
+	  }
+      #endif
+	  else throw string( "Unsupported image type: " + argument );
+
+	  //==== create format specific iipimage subclass instance as pointer.
+
+	  // Open image, and add it to our cache
+	  temp->openImage();
+	  session->imageCache->insert(temp);    // insert into cache.
+
+	  if( session->loglevel >= 3 ){
+	    *(session->logfile) << "FIF :: Created and cached image object with key = \"" << argument << "\"" << endl;
+	  }
 	}
-	test.setFileNamePattern( filename_pattern );
-	test.setFileSystemPrefix( filesystem_prefix );
-        test.Initialise();  // also gathers the timestamp here.
-
-        /***************************************************************
-          Test for different image types - only TIFF is native for now
-        ***************************************************************/
-
-        ImageFormat format = test.getImageFormat();
-
-        if( format == TIF ){
-          if( session->loglevel >= 2 ) *(session->logfile) << "FIF :: TIFF image detected" << endl;
-          temp = IIPImagePtr(new TPTImage( test ));
-        }
-#pragma mark Adding in basic openslide functionality
-        else if( format == OPENSLIDE ){
-          if( session->loglevel >= 2 ) *(session->logfile) << "FIF :: OpenSlide image detected" << endl;
-          temp = IIPImagePtr(new OpenSlideImage( test, session->tileCache ));
-        }
-    #ifdef HAVE_KAKADU
-        else if( format == JPEG2000 ){
-          if( session->loglevel >= 2 ) *(session->logfile) << "FIF :: JPEG2000 image detected" << endl;
-          temp = IIPImagePtr(new KakaduImage( test ));
-        }
-    #endif
-        else throw string( "Unsupported image type: " + argument );
-
-        //==== create format specific iipimage subclass instance as pointer.
-
-        // Open image, and add it to our cache
-        temp->openImage();
-        session->imageCache->insert(temp);    // insert into cache.
-
-        if( session->loglevel >= 3 ){
-          *(session->logfile) << "FIF :: Created and cached image object with key = \"" << argument << "\"" << endl;
-        }
     }
 
 
@@ -260,7 +296,7 @@ void FIF::run( Session* session, const string& src ){
 
 bool FIF::isRemote(const string& filename) {
   uint i;
-  for (i = 0; i < sizeof(remote_prefixes)/sizeof(remote_prefixes[0]); i++) {
+  for (i = 0; i < remote_prefixes.size(); i++) {
     if (0==filename.find(remote_prefixes[i])) {
       return true;
     }

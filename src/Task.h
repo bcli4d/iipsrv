@@ -216,7 +216,7 @@ class FIF : public Task {
  public:
   void run( Session* session, const std::string& argument );
   bool isRemote( const std::string& path );
-  static const std::string remote_prefixes[];  
+  //  static const std::string remote_prefixes[];  
 };
 
 
