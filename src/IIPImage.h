@@ -35,6 +35,7 @@
 #include <vector>
 #include <map>
 #include <stdexcept>
+#include <curl/curl.h>
 
 #include "RawTile.h"
 
@@ -79,6 +80,39 @@ class IIPImage {
 
   /// Private function to determine the image type
   void testImageType() throw( file_error );
+
+  /// Private function to determine the image type
+  void testImageType_remote() throw( file_error );
+
+  /// libcurl handle
+  CURL *curl;
+
+  /// Set true if file is remote
+  bool isRemoteFile;
+
+  /// Seek offset                                                                                    
+  uint offset;
+
+  ///Private function to determine is file path is for a remote file
+  bool isRemote( const std::string& path );
+
+  /// curl callback function to copy data from curl buffer to our buffer                            
+  static size_t copy_data(void *buffer, size_t size, size_t nmemb, void *userp);
+
+  /// No-op needed by curlStatProc                                                                          
+  static size_t throw_away(void *ptr, size_t size, size_t nmemb, void *data);
+
+  /// Open a possibly remote file.                                                                                  
+  int fopen_remote( const char *pathname, const char *mode );
+
+  /// Read from a possibly remote file.                                                                             
+  size_t fread_remote( void *ptr, size_t size, size_t nmemb );
+
+  /// Close a possible remote file.                                                                                 
+  int fclose_remote( );
+
+  /// Get file status of a possibly remote file.                                                            
+  int stat_remote( const char *pathname, struct stat *buf );
 
  protected:
 
@@ -155,7 +189,10 @@ class IIPImage {
     isSet( false ),
     currentX( 0 ),
     currentY( 90 ),
-    timestamp( 0 ) {};
+    timestamp( 0 ),
+    curl( NULL ),
+    offset( 0 ),
+    isRemoteFile( false ) {};
 
   /// Constructer taking the image path as parameter
   /** @param s image path
@@ -172,7 +209,10 @@ class IIPImage {
     isSet( false ),
     currentX( 0 ),
     currentY( 90 ),
-    timestamp( 0 ) {};
+    timestamp( 0 ),
+    curl( NULL ),
+    offset( 0 ),
+    isRemoteFile( false ) {};
 
   /// Copy Constructor taking reference to another IIPImage object
   /** @param im IIPImage object
@@ -203,7 +243,10 @@ class IIPImage {
     currentX( image.currentX ),
     currentY( image.currentY ),
     metadata( image.metadata ),
-    timestamp( image.timestamp ) {};
+    timestamp( image.timestamp ),
+    curl( image.curl ),
+    offset( image.offset ),
+    isRemoteFile( image.isRemoteFile ) {};
 
   /// Virtual Destructor
   virtual ~IIPImage() { ; };
@@ -223,11 +266,11 @@ class IIPImage {
   /// Return a list of horizontal angles
   std::list <int> getHorizontalViewsList(){ return horizontalAnglesList; };
 
-  /// Return the image path
-  const std::string& getImagePath() { return imagePath; };
+  /// Return whether the file is remote or local
+  bool getIsRemoteFile() { return isRemoteFile; };
 
-  /// Return the file system prefix for this image
-  const std::string& getFileSystemPrefix() { return fileSystemPrefix; };
+  /// Return the image path                                                                                   
+  const std::string& getImagePath() { return imagePath; };
 
   /// Set the file suffix
   void setSuffix(const std::string& sx ) { suffix = sx; };
@@ -243,7 +286,7 @@ class IIPImage {
   ImageFormat getImageFormat() { return format; };
 
   /// get the image timestamp from file system
-  static time_t getFileTimestamp(const std::string& s) throw( file_error );
+  static time_t getFileTimestamp(const std::string& s) throw( file_error);
 
   time_t getRawTimestamp() { return timestamp; };
 
